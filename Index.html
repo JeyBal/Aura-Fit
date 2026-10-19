@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aura Fit</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+<style>
+:root{--bg:#0A0C0B;--g:rgba(255,255,255,.065);--gl:rgba(255,255,255,.1);--ink:#F2F5F0;--mute:#8E9A92;--lime:#C6FF3D;--org:#FF6A1F;--sky:#59C8FF;--r:28px;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:radial-gradient(900px 420px at 85% -5%,rgba(198,255,61,.14),transparent 60%),radial-gradient(700px 400px at -10% 30%,rgba(255,106,31,.1),transparent 60%),var(--bg);background-attachment:fixed;color:var(--ink);font:400 16px/1.45 Outfit,system-ui,sans-serif;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))}
+main{max-width:620px;margin:0 auto;padding:22px 18px}
+h1{font-size:34px;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
+h2{font-size:21px;font-weight:600;margin:30px 0 12px}h3{font-size:18px;font-weight:600;margin:0}
+.mute{color:var(--mute);font-size:14px}
+.card{background:var(--g);border:1px solid var(--gl);border-radius:var(--r);padding:20px;margin:14px 0;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}
+button{font:600 15px Outfit,sans-serif;padding:12px 20px;border-radius:99px;border:1px solid var(--gl);background:var(--g);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,background .2s}
+button:active{transform:scale(.95)}
+button.pri{background:var(--lime);color:#0A0C0B;border-color:var(--lime);box-shadow:0 8px 26px rgba(198,255,61,.3)}
+button.ic{width:44px;height:44px;padding:0;justify-content:center}
+button.ic.pri{width:48px;height:48px}
+button.on{background:var(--lime);color:#0A0C0B;border-color:var(--lime)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+input,select{font:inherit;padding:12px 14px;border:1px solid var(--gl);border-radius:16px;background:rgba(255,255,255,.05);color:var(--ink);min-width:0;width:100%}
+select option{background:#151917}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mute);flex:1;min-width:84px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-weight:600;font-size:14px}
+.bt{background:rgba(255,106,31,.16);color:var(--org)}.br{background:rgba(89,200,255,.15);color:var(--sky)}
+.ring{position:relative;display:grid;place-items:center}.ring svg{position:absolute;inset:0}
+.ring .in{position:relative;text-align:center;line-height:1.1}
+.arc{transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)}
+.big{font-size:44px;font-weight:800;letter-spacing:-.02em}
+.macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}
+.macros div{text-align:center}.macros b{font-size:15px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips button{padding:9px 16px}
+.plan{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.plan .ico{width:48px;height:48px;border-radius:16px;background:rgba(198,255,61,.14);color:var(--lime);display:grid;place-items:center;flex:none}
+.sets{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.sets button{width:54px;height:54px;padding:0;justify-content:center;font-size:20px;font-weight:800;border-radius:50%}
+.sets button.d{background:var(--lime);color:#0A0C0B;border-color:var(--lime)}
+.sets button.pop{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+.ex a{color:var(--sky);font-weight:600;text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.erow{display:grid;grid-template-columns:1fr 52px 66px 60px 44px;gap:6px;margin:8px 0}.erow input{padding:10px 8px}
+.food{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid var(--gl);padding:12px 0}
+.food:first-of-type{border-top:0}
+.sw{display:flex;gap:8px;align-items:center;border-top:1px solid var(--gl);padding:10px 0}.sw input{width:78px}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - 24px));display:flex;gap:4px;padding:8px;border-radius:99px;background:rgba(24,28,26,.72);border:1px solid var(--gl);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 14px 40px rgba(0,0,0,.5);z-index:8}
+.tabs button{flex:1;flex-direction:column;gap:2px;padding:9px 4px;border:0;background:transparent;color:var(--mute);font-size:11px;border-radius:99px}
+.tabs button.on{background:var(--lime);color:#0A0C0B;box-shadow:none}
+#timer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(116px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - 24px));display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 12px 22px;border-radius:99px;background:var(--org);color:#0A0C0B;z-index:9;box-shadow:0 12px 34px rgba(255,106,31,.4)}
+#timer b{font-size:34px;font-weight:800;line-height:1}
+#timer button{background:rgba(0,0,0,.18);border-color:transparent;color:#0A0C0B;padding:10px 16px}
+.go{animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.6)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body>
+<main id="app"></main>
+<div id="timer"><div><div id="tl" style="font-size:13px;font-weight:600">Recupero</div><b id="tv">0:00</b></div><div class="row"><button onclick="tAdd(15)">+15 s</button><button onclick="tStop()">Salta</button></div></div>
+<nav class="tabs" aria-label="Sezioni">
+<button id="t-home" onclick="setTab('home')"><i data-lucide="layout-dashboard"></i>Oggi</button>
+<button id="t-gym" onclick="setTab('gym')"><i data-lucide="dumbbell"></i>Allenamento</button>
+<button id="t-food" onclick="setTab('food')"><i data-lucide="utensils"></i>Nutrizione</button>
+<button id="t-set" onclick="setTab('set')"><i data-lucide="settings"></i>Impostazioni</button>
+</nav>
+<script>
+const P={Petto:[["Panca piana con bilanciere",4,"8-10",90],["Panca inclinata con manubri",3,"10-12",90],["Croci ai cavi",3,"12-15",60],["Piegamenti",3,"max",60]],
+Schiena:[["Lat machine",4,"10-12",90],["Rematore con bilanciere",4,"8-10",90],["Pulley basso",3,"12",60],["Trazioni alla sbarra",3,"max",90]],
+Gambe:[["Squat",4,"8-10",120],["Leg press",3,"12",90],["Affondi",3,"10 per gamba",75],["Leg curl",3,"12-15",60],["Calf in piedi",4,"15",45]],
+Spalle:[["Military press",4,"8-10",90],["Alzate laterali",4,"12-15",60],["Alzate posteriori",3,"15",60],["Face pull",3,"15",60]],
+Braccia:[["Curl con bilanciere",3,"10",60],["Curl a martello",3,"12",60],["French press",3,"10",60],["Pushdown ai cavi",3,"12-15",60]]};
+const K="ferrokcal1",D=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"];
+let S={plans:[],days:[1,3,5],ov:{},prof:{sex:"m",age:30,w:75,h:175,act:1.2,goal:"lose"},food:{}};
+let stOK=true;try{const r=localStorage.getItem(K);if(r){const o=JSON.parse(r);S=Object.assign(S,o);S.prof=Object.assign({sex:"m",age:30,w:75,h:175,act:1.2,goal:"lose"},o.prof||{})}}catch(e){}
+S.steps=S.steps||{};S.hist=S.hist||[];
+try{localStorage.setItem(K+"t","1");localStorage.removeItem(K+"t")}catch(e){stOK=false}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){stOK=false}};
+const $=i=>document.getElementById(i),td=()=>new Date().toLocaleDateString("sv");
+const isTrain=()=>{const t=td();return t in S.ov?S.ov[t]:S.days.includes(new Date().getDay())};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const I=(n,s=20)=>`<i data-lucide="${n}" style="width:${s}px;height:${s}px"></i>`;
+let tab="home",view="home",cur=0,sd={},lk="",pend=[],pmsg="",dl=-1,t0=0,res=null;
+if(S.sess&&S.plans[S.sess.cur]){cur=S.sess.cur;sd=S.sess.sd||{};t0=S.sess.t0||Date.now();tab="gym";view="session"}
+
+function ring(p,sz,sw,col,inner){const r=(sz-sw)/2,C=2*Math.PI*r,c=sz/2;return `<div class="ring" style="width:${sz}px;height:${sz}px"><svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="${sw}"/><circle class="arc" data-o="${C*(1-Math.min(1,Math.max(0,p)))}" cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 ${c} ${c})"/></svg><div class="in">${inner}</div></div>`}
+function render(anim){
+ ["home","gym","food","set"].forEach(t=>$("t-"+t).className=t==tab?"on":"");
+ const a=$("app");a.className=anim?"go":"";
+ a.innerHTML=tab=="home"?home():tab=="gym"?(view=="session"?session():view=="edit"?editor():view=="done"?summary():view=="lib"?lib():gym()):tab=="food"?food():settings();
+ if(!stOK)a.insertAdjacentHTML("afterbegin",'<div class="card" role="alert" style="border-color:var(--org)">Il salvataggio non è disponibile in questo browser: schede, pasti e passi andranno persi alla chiusura della pagina.</div>');
+ if(window.lucide)try{lucide.createIcons()}catch(e){}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll(".arc").forEach(x=>x.style.strokeDashoffset=x.dataset.o)));
+}
+function setTab(t){tab=t;view="home";dl=-1;render(true)}
+
+function calc(){
+ const p=S.prof,bmr=10*p.w+6.25*p.h-5*p.age+(p.sex=="m"?5:-161),t=isTrain(),tdee=bmr*p.act+(t?300:0);
+ const adj=p.goal=="lose"?-450:p.goal=="gain"?250:0,target=Math.round(tdee+adj);
+ const pr=Math.round(p.w*(p.goal=="keep"?1.6:2)),fa=Math.round(target*.27/9),ca=Math.max(0,Math.round((target-pr*4-fa*9)/4));
+ return{bmr:Math.round(bmr),tdee:Math.round(tdee),adj,target,t,pr,fa,ca};
+}
+function tot(){const f=S.food[td()]||[];return f.reduce((a,x)=>({k:a.k+x.k,p:a.p+(x.p||0),c:a.c+(x.c||0),f:a.f+(x.f||0)}),{k:0,p:0,c:0,f:0})}
+
+function home(){
+ const c=calc(),e=tot(),left=c.target-e.k,over=left<0;
+ const pl=S.plans.slice(0,3);
+ return `<div class="mute">${new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}</div><h1>Oggi</h1>
+ <span class="badge ${c.t?"bt":"br"}">${I(c.t?"flame":"moon",16)}${c.t?"Giorno di allenamento":"Giorno di riposo"}</span>
+ <div class="card" style="margin-top:20px"><div class="row sp"><div><div class="mute">Calorie</div><div class="big">${Math.abs(left)}</div><div class="mute">${over?"oltre il target":"ancora disponibili"}</div><div class="mute" style="margin-top:10px">Target ${c.target} kcal<br>Mangiate ${e.k} kcal</div></div>
+ ${ring(e.k/c.target,168,16,over?"var(--org)":"var(--lime)",`${I("flame",26)}<div class="mute" style="margin-top:4px">${Math.round(Math.min(e.k/c.target,9.99)*100)}%</div>`)}</div>
+ </div>
+ ${stepsCard()}${histCard()}<div class="card"><div class="row sp"><h3>${c.t?"Scheda di oggi":"Recupero"}</h3>${I("dumbbell",22)}</div>
+ ${c.t?(pl.length?pl.map((p,i)=>`<div class="row sp" style="margin-top:14px"><span>${esc(p.name)}<br><span class="mute">${p.ex.length} esercizi</span></span><div class="row"><button class="pri" onclick="startS(${i})">${I("play",16)}Avvia</button>${dl==i?`<button style="background:var(--org);border-color:var(--org);color:#0A0C0B" onclick="delOk(${i})">Sì, elimina</button><button onclick="dl=-1;render()">Annulla</button>`:`<button onclick="delP(${i})">${I("trash-2",16)}Elimina</button>`}</div></div>`).join(""):`<p class="mute">Non hai ancora una scheda.</p><button class="pri" onclick="setTab('gym')">${I("plus",16)}Crea scheda</button>`):`<p class="mute" style="margin:10px 0 0">Oggi riposi: il target calorico è più basso. Dormi bene e bevi acqua.</p>`}</div>
+ <div class="row"><button class="pri" onclick="setTab('food')">${I("plus",16)}Aggiungi pasto</button><button onclick="setTab('food')">${I("camera",16)}Foto del pasto</button></div>`;
+}
+
+function gym(){
+ let h=`<h1>Allenamento</h1><p class="mute" style="margin:0">Le tue schede e quelle pronte</p><h2>Le mie schede</h2>`;
+ if(!S.plans.length)h+=`<p class="mute">Nessuna scheda. Creane una con gli esercizi del trainer o parti da una pronta.</p>`;
+ S.plans.forEach((p,i)=>{h+=`<div class="card plan"><div class="ico">${I("dumbbell",24)}</div><div style="flex:1"><h3>${esc(p.name)}</h3><span class="mute">${p.ex.length} esercizi${p.wu?", riscaldamento "+p.wu+" min":""}${p.cd?", defaticamento "+p.cd+" min":""}</span></div><div class="row" style="width:100%"><button class="pri" onclick="startS(${i})">${I("play",16)}Avvia</button><button onclick="cur=${i};view='edit';render(true)">${I("pencil",16)}Modifica</button>${dl==i?`<button class="pri" style="background:var(--org);border-color:var(--org);box-shadow:none" onclick="delOk(${i})">Sì, elimina</button><button onclick="dl=-1;render()">Annulla</button>`:`<button onclick="delP(${i})">${I("trash-2",16)}Elimina</button>`}</div></div>`});
+ return h+`<button class="pri" onclick="S.plans.push({name:'Nuova scheda',wu:5,cd:5,ex:[{n:'',s:3,r:'10',t:60}]});save();cur=S.plans.length-1;view='edit';render(true)">${I("plus",18)}Nuova scheda personalizzata</button>
+ <div class="card row sp" style="margin-top:22px"><div class="plan"><div class="ico">${I("library",24)}</div><div><h3>Libreria esercizi</h3><span class="mute">${E.length} esercizi con spiegazione</span></div></div><button class="pri" onclick="openLib('home')">${I("search",16)}Cerca</button></div>
+ <h2>Schede pronte</h2><p class="mute">Toccane una per copiarla tra le tue: poi la puoi modificare.</p><div class="chips">${Object.keys(P).map(g=>`<button onclick="addPre('${g}')">${I("plus",15)}${g}</button>`).join("")}</div>`;
+}
+function delP(i){dl=i;render()}
+function delOk(i){S.plans.splice(i,1);dl=-1;save();render()}
+function addPre(g){S.plans.push({name:g,wu:5,cd:5,ex:P[g].map(e=>({n:e[0],s:e[1],r:e[2],t:e[3]}))});save();render()}
+function editor(){
+ const p=S.plans[cur];
+ return `<h1>Modifica scheda</h1><div class="card"><label>Nome scheda<input value="${esc(p.name)}" oninput="S.plans[cur].name=this.value;save()"></label>
+ <label style="margin-top:12px">Riscaldamento in minuti (0 se non serve)<input type="number" min="0" inputmode="numeric" value="${p.wu||0}" oninput="S.plans[cur].wu=+this.value||0;save()"></label></div>
+ <h2 style="margin-top:22px">Esercizi (${p.ex.length})</h2>
+ ${p.ex.map((e,i)=>`<div class="card"><div class="row sp"><b>Esercizio ${i+1}</b><button class="ic" aria-label="Rimuovi esercizio" onclick="S.plans[cur].ex.splice(${i},1);save();render()">${I("trash-2",16)}</button></div>
+ <label style="margin-top:8px">Nome<input placeholder="Es. Panca piana" value="${esc(e.n)}" oninput="ed(${i},'n',this.value)"></label>
+ <div class="row" style="margin-top:10px"><label>Serie<input type="number" min="1" value="${e.s}" oninput="ed(${i},'s',this.value)"></label><label>Ripetizioni<input value="${esc(e.r)}" oninput="ed(${i},'r',this.value)"></label><label>Recupero (s)<input type="number" min="0" value="${e.t}" oninput="ed(${i},'t',this.value)"></label><label>Peso (kg)<input type="number" min="0" step="0.5" inputmode="decimal" value="${e.kg||0}" oninput="ed(${i},'kg',this.value)"></label></div></div>`).join("")}
+ <div class="row" style="margin-bottom:6px"><button onclick="S.plans[cur].ex.push({n:'',s:3,r:'10',t:60});save();render()">${I("plus",16)}Aggiungi esercizio</button><button onclick="openLib('edit')">${I("search",16)}Dalla libreria</button></div>
+ <div class="card"><label>Defaticamento in minuti, a fine allenamento (0 se non serve)<input type="number" min="0" inputmode="numeric" value="${p.cd||0}" oninput="S.plans[cur].cd=+this.value||0;save()"></label></div>
+ <div class="row"><button class="pri" onclick="view='home';render(true)">${I("check",16)}Salva scheda</button></div>`;
+}
+function ed(i,f,v){S.plans[cur].ex[i][f]=(f=="s"||f=="t"||f=="kg")?(+v||0):v;save()}
+function startS(i){cur=i;sd={};lk="";t0=Date.now();S.sess={cur:i,sd:sd,t0:t0};save();tab="gym";view="session";render(true)}
+function session(){
+ const p=S.plans[cur],n=p.ex.reduce((a,e)=>a+e.s,0),d=Object.keys(sd).filter(k=>k!="wu"&&k!="cd"&&sd[k]).length;
+ const cd=p.cd>0?`<div class="card row sp"><div class="plan"><div class="ico" style="background:rgba(89,200,255,.15);color:var(--sky)">${I("wind",24)}</div><div><h3>Defaticamento</h3><span class="mute">${p.cd} minuti</span></div></div><div class="row"><button class="pri" onclick="tStart(${p.cd*60},'Defaticamento')">${I("timer",16)}Avvia</button><button class="${sd.cd?"on":""}" onclick="sd.cd=!sd.cd;save();render()">${sd.cd?"Fatto":"Segna fatto"}</button></div></div>`:"";
+ const wu=p.wu>0?`<div class="card row sp"><div class="plan"><div class="ico" style="background:rgba(255,106,31,.16);color:var(--org)">${I("flame",24)}</div><div><h3>Riscaldamento</h3><span class="mute">${p.wu} minuti</span></div></div><div class="row"><button class="pri" onclick="tStart(${p.wu*60},'Riscaldamento')">${I("timer",16)}Avvia</button><button class="ic ${sd.wu?"on":""}" aria-label="Segna come fatto" onclick="sd.wu=!sd.wu;save();render()">${I("check",18)}</button></div></div>`:"";
+ return `<div class="row sp"><h1>${esc(p.name)}</h1><div class="row"><button onclick="tStop();view='edit';render(true)">${I("pencil",16)}Modifica</button><button onclick="finish()">${I("flag",16)}Termina</button></div></div>
+ <div class="card row" style="gap:18px">${ring(n?d/n:0,70,8,"var(--lime)",`<b>${d}/${n}</b>`)}<div><b>Serie completate</b><div class="mute">Tocca una serie quando l’hai finita: parte il recupero.</div></div></div>`+wu+
+ p.ex.map((e,i)=>`<div class="card ex"><h3>${esc(e.n||"Esercizio")}</h3><span class="mute">${e.s} serie × ${esc(e.r)}, recupero ${e.t} s</span><div class="row sp" style="margin-top:12px"><b>${e.kg>0?e.kg+" kg":"Corpo libero"}</b><span class="row" style="gap:8px"><button onclick="kgAdj(${i},-2.5)">−2,5 kg</button><button onclick="kgAdj(${i},2.5)">+2,5 kg</button></span></div>
+ <div class="sets">${Array.from({length:e.s},(_,j)=>{const k=i+"-"+j;return `<button class="${sd[k]?"d":""} ${lk==k?"pop":""}" aria-label="Serie ${j+1}" onclick="setDone(${i},${j})">${sd[k]?I("check",22):j+1}</button>`}).join("")}</div>
+ <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.n+" esecuzione corretta")}" target="_blank" rel="noopener">${I("circle-play",18)}Guarda come si esegue</a></div>`).join("")+cd;
+}
+function finish(){tStop();const p=S.plans[cur],n=p.ex.reduce((a,e)=>a+e.s,0),d=Object.keys(sd).filter(k=>k!="wu"&&k!="cd"&&sd[k]).length,m=Math.min(180,Math.max(1,Math.round((Date.now()-t0)/60000)));res={n,d,m,k:Math.round(5*S.prof.w*m/60),name:p.name};S.hist.push({d:td(),name:p.name,k:res.k,m,n,done:d});S.sess=null;save();view="done";render(true)}
+function summary(){
+ const r=res;
+ return `<h1>Allenamento completato</h1><p class="mute" style="margin:0">${esc(r.name)}</p>
+ <div class="card" style="text-align:center"><div style="display:flex;justify-content:center">${ring(r.k/300,190,18,"var(--org)",`${I("flame",28)}<div class="big" style="font-size:40px">${r.k}</div><div class="mute">kcal stimate</div>`)}</div>
+ <div class="row" style="justify-content:space-around;margin-top:24px;align-items:flex-start"><div>${ring(r.m/45,96,10,"var(--lime)",`<b>${r.m}</b><div class="mute" style="font-size:11px">min</div>`)}<div class="mute" style="margin-top:6px">Durata</div></div><div>${ring(r.n?r.d/r.n:0,96,10,"var(--sky)",`<b>${r.d}/${r.n}</b>`)}<div class="mute" style="margin-top:6px">Serie</div></div></div></div>
+ <p class="mute">Stima basata sul tuo peso e sul tempo dall’avvio alla fine (circa 5 MET): i valori reali possono variare. Il cerchio grande si confronta con le 300 kcal aggiunte al target nei giorni di allenamento, quello della durata con 45 minuti.</p>
+ <button class="pri" onclick="view='home';render(true)">${I("check",16)}Fatto</button>`;
+}
+const E=[
+["Panca piana con bilanciere","Petto","Bilanciere","Sdraiato sulla panca, abbassa il bilanciere al petto con i gomiti a circa 45 gradi e spingi in alto. Mantieni scapole addotte e piedi ben appoggiati."],
+["Panca piana con manubri","Petto","Manubri","Spingi i manubri verso l’alto partendo dai lati del petto, senza sbattere i pesi in cima. Scendi in modo controllato fino a sentire lo stiramento."],
+["Panca inclinata con manubri","Petto","Manubri","Con la panca inclinata a 30 gradi, spingi i manubri sopra la parte alta del petto. Gomiti leggermente aperti e schiena aderente allo schienale."],
+["Croci con manubri","Petto","Manubri","Apri le braccia ad arco con i gomiti appena flessi fino a sentire lo stiramento del petto. Risali riportando i manubri sopra di te."],
+["Croci ai cavi","Petto","Cavi","In piedi tra le due colonne, porta le mani davanti al petto con un arco ampio e gomiti leggermente piegati. Stringi il petto in chiusura."],
+["Chest press","Petto","Macchina","Regola il sedile in modo che le maniglie siano a metà petto. Spingi in avanti senza staccare la schiena e torna lentamente."],
+["Pec deck","Petto","Macchina","Seduto con gli avambracci sui cuscini, chiudi le braccia davanti a te contraendo il petto. Torna indietro senza far toccare i pesi."],
+["Piegamenti sulle braccia","Petto","Corpo libero","Mani poco più larghe delle spalle e corpo in linea retta. Scendi finché il petto sfiora il pavimento e spingi verso l’alto."],
+["Lat machine","Dorso","Macchina","Afferra la barra a presa larga e tirala al petto portando i gomiti verso i fianchi. Risali lentamente senza dondolare con il busto."],
+["Trazioni alla sbarra","Dorso","Corpo libero","Appenditi alla sbarra e tirati su finché il mento la supera, guidando con i gomiti. Scendi in modo controllato fino a braccia distese."],
+["Rematore con bilanciere","Dorso","Bilanciere","Busto inclinato in avanti e schiena neutra. Tira il bilanciere verso l’addome portando i gomiti indietro e stringi le scapole."],
+["Rematore con manubrio","Dorso","Manubri","Con una mano e un ginocchio sulla panca, tira il manubrio verso l’anca con il gomito vicino al corpo. Scendi fino a braccio disteso."],
+["Pulley basso","Dorso","Cavi","Seduto con la schiena dritta, tira la maniglia verso l’addome stringendo le scapole. Torna avanti senza arrotondare la schiena."],
+["Low row alla macchina","Dorso","Macchina","Petto appoggiato al cuscino, tira le maniglie indietro portando i gomiti oltre il busto. Rilascia lentamente."],
+["Stacco da terra","Dorso","Bilanciere","Bilanciere sopra la metà del piede, schiena neutra. Spingi con le gambe e porta l’anca in avanti fino a stare in piedi, poi scendi controllato."],
+["Pullover ai cavi","Dorso","Cavi","In piedi davanti al cavo alto, con braccia quasi tese porta la barra dalle spalle verso le cosce. Contrai il dorso e torna su lentamente."],
+["Squat","Gambe","Bilanciere","Bilanciere sulla parte alta della schiena, piedi larghi come le spalle. Scendi con il bacino indietro fino alla parallela e risali spingendo sui talloni."],
+["Squat a corpo libero","Gambe","Corpo libero","Piedi alla larghezza delle spalle e braccia avanti. Scendi con il bacino indietro e il petto alto, poi risali con forza."],
+["Leg press","Gambe","Macchina","Piedi alla larghezza delle spalle sulla pedana. Spingi senza bloccare le ginocchia e scendi finché le ginocchia sono a circa 90 gradi."],
+["Affondi con manubri","Gambe","Manubri","Fai un passo avanti e abbassa il ginocchio posteriore verso terra. Spingi sul piede davanti per tornare in piedi e alterna le gambe."],
+["Squat bulgaro","Gambe","Manubri","Piede posteriore appoggiato su una panca. Scendi con il busto eretto finché la coscia davanti è parallela al suolo e risali."],
+["Leg extension","Gambe","Macchina","Seduto, estendi le gambe fino quasi a bloccare le ginocchia e contrai i quadricipiti. Scendi lentamente."],
+["Leg curl sdraiato","Gambe","Macchina","Sdraiato a pancia in giù, fletti le ginocchia portando i talloni verso i glutei. Torna lentamente senza inarcare la schiena."],
+["Stacco rumeno","Gambe","Bilanciere","Con ginocchia appena flesse, porta il bacino indietro facendo scendere il bilanciere lungo le gambe. Risali stringendo i glutei."],
+["Hip thrust","Gambe","Bilanciere","Schiena appoggiata a una panca e bilanciere sulle anche. Spingi il bacino in alto fino ad allineare busto e cosce, stringendo i glutei."],
+["Calf in piedi","Gambe","Macchina","Spalle sotto i cuscini e punte dei piedi sulla pedana. Sali sulle punte il più possibile e scendi sentendo lo stiramento dei polpacci."],
+["Military press","Spalle","Bilanciere","In piedi, spingi il bilanciere dalle clavicole sopra la testa con addome contratto. Evita di inarcare la schiena."],
+["Lento avanti con manubri","Spalle","Manubri","Seduto, spingi i manubri dall’altezza delle spalle fino sopra la testa. Scendi in modo controllato."],
+["Shoulder press alla macchina","Spalle","Macchina","Regola il sedile con le maniglie all’altezza delle spalle. Spingi verso l’alto senza staccare la schiena e torna lentamente."],
+["Alzate laterali","Spalle","Manubri","In piedi con gomiti leggermente flessi, solleva i manubri di lato fino all’altezza delle spalle. Scendi lentamente senza slanci."],
+["Alzate frontali","Spalle","Manubri","Solleva i manubri davanti a te fino all’altezza delle spalle con braccia quasi tese. Scendi in modo controllato."],
+["Alzate posteriori","Spalle","Manubri","Busto inclinato in avanti, apri le braccia di lato portando i gomiti all’altezza delle spalle. Stringi le scapole in alto."],
+["Face pull","Spalle","Cavi","Con la corda all’altezza del viso, tira verso il volto aprendo i gomiti e ruotando le mani verso l’esterno. Torna con controllo."],
+["Curl con bilanciere","Bicipiti","Bilanciere","In piedi con gomiti fermi ai fianchi, fletti gli avambracci portando la barra alle spalle. Scendi lentamente senza dondolare."],
+["Curl con manubri alternato","Bicipiti","Manubri","Fletti un braccio alla volta ruotando il polso verso l’alto. Mantieni i gomiti vicini al corpo."],
+["Curl a martello","Bicipiti","Manubri","Con i palmi uno di fronte all’altro, porta i manubri verso le spalle senza ruotare i polsi. Lavora anche sull’avambraccio."],
+["Curl alla panca Scott","Bicipiti","Macchina","Con le braccia appoggiate al cuscino inclinato, fletti i gomiti portando il peso in alto. Scendi fino quasi a distendere le braccia."],
+["Curl ai cavi","Bicipiti","Cavi","Davanti al cavo basso, fletti gli avambracci con i gomiti fissi. La tensione resta costante per tutta la ripetizione."],
+["Curl concentrato","Bicipiti","Manubri","Seduto con il gomito appoggiato all’interno della coscia, solleva il manubrio verso la spalla e scendi lentamente."],
+["French press","Tricipiti","Bilanciere","Sdraiato, con il bilanciere sopra il viso, fletti i gomiti portandolo verso la fronte. Poi estendi senza aprire i gomiti."],
+["Pushdown ai cavi","Tricipiti","Cavi","In piedi davanti al cavo alto, spingi la barra verso il basso estendendo i gomiti tenuti fermi ai fianchi. Risali lentamente."],
+["Dip alle parallele","Tricipiti","Corpo libero","Con il busto eretto, scendi flettendo i gomiti all’indietro fino a 90 gradi e spingi verso l’alto."],
+["Estensioni sopra la testa","Tricipiti","Manubri","Tieni un manubrio con due mani sopra la testa. Fletti i gomiti portandolo dietro la nuca ed estendi di nuovo."],
+["Kickback con manubrio","Tricipiti","Manubri","Busto inclinato e gomito fisso lungo il fianco: estendi l’avambraccio all’indietro fino a tendere il braccio."],
+["Panca presa stretta","Tricipiti","Bilanciere","Come la panca piana, ma con le mani alla larghezza delle spalle e gomiti vicini al corpo. Spingi concentrandoti sui tricipiti."],
+["Crunch","Addome","Corpo libero","Sdraiato con ginocchia flesse, solleva spalle e busto contraendo gli addominali. Scendi senza rilassare completamente."],
+["Plank","Addome","Corpo libero","Appoggiato sugli avambracci, mantieni il corpo in linea dalla testa ai talloni con addome e glutei contratti. Respira con regolarità."],
+["Sollevamento gambe alla sbarra","Addome","Corpo libero","Appeso alla sbarra, solleva le gambe fino all’altezza dell’anca o oltre, senza dondolare. Scendi lentamente."],
+["Crunch ai cavi","Addome","Cavi","In ginocchio davanti al cavo alto, fletti il busto portando i gomiti verso le ginocchia. Contrai l’addome e risali piano."],
+["Russian twist","Addome","Manubri","Seduto con busto inclinato e piedi sollevati, ruota il tronco da un lato all’altro tenendo un peso davanti a te."],
+["Crunch alla macchina","Addome","Macchina","Seduto con il cuscino sul petto, fletti il busto in avanti contraendo gli addominali. Torna indietro senza far toccare i pesi."]
+];
+let lq="",lg="Tutti",le="Tutte",lmsg="",lback="home";
+function icons(){if(window.lucide)try{lucide.createIcons()}catch(x){}}
+function openLib(b){lback=b;view="lib";lq="";lg="Tutti";le="Tutte";lmsg="";render(true)}
+function libList(){
+ const q=lq.trim().toLowerCase(),L=E.map((x,i)=>[x,i]).filter(([x])=>(lg=="Tutti"||x[1]==lg)&&(le=="Tutte"||x[2]==le)&&(!q||(x[0]+" "+x[1]+" "+x[2]).toLowerCase().includes(q)));
+ return L.length?L.map(([x,i])=>`<div class="food" style="align-items:flex-start"><div style="flex:1"><b>${esc(x[0])}</b><div class="mute">${x[1]}, ${x[2]}</div><div style="font-size:14px;margin-top:4px">${esc(x[3])}</div></div><button class="pri" onclick="addEx(${i})">${I("plus",16)}Aggiungi</button></div>`).join(""):`<p class="mute">Nessun esercizio trovato. Prova con un’altra parola o cambia i filtri.</p>`;
+}
+function lib(){
+ const G=["Tutti","Petto","Dorso","Gambe","Spalle","Bicipiti","Tricipiti","Addome"],Q=["Tutte","Manubri","Bilanciere","Cavi","Macchina","Corpo libero"];
+ return `<div class="row sp"><h1>Libreria</h1><button onclick="view=lback;render(true)">${I("arrow-left",16)}Indietro</button></div>
+ <div class="card"><label>Aggiungi alla scheda<select onchange="cur=+this.value;lmsg=''">${S.plans.length?S.plans.map((p,i)=>`<option value="${i}" ${i==cur?"selected":""}>${esc(p.name)}</option>`).join(""):`<option>Nuova scheda (verrà creata)</option>`}</select></label>
+ <label style="margin-top:12px">Cerca<input value="${esc(lq)}" placeholder="Es. squat, cavi, bicipiti" oninput="lq=this.value;$('lr').innerHTML=libList();icons()"></label>
+ <div class="chips" style="margin-top:12px">${G.map(g=>`<button class="${lg==g?"on":""}" onclick="lg='${g}';render()">${g}</button>`).join("")}</div>
+ <label style="margin-top:12px">Attrezzatura<select onchange="le=this.value;render()">${Q.map(x=>`<option ${le==x?"selected":""}>${x}</option>`).join("")}</select></label></div>
+ <p id="lm" class="mute" role="status" style="margin:0;color:var(--lime)">${esc(lmsg)}</p>
+ <div class="card" style="padding-top:8px;padding-bottom:8px" id="lr">${libList()}</div>`;
+}
+function addEx(i){
+ let c=false;if(!S.plans.length){S.plans.push({name:"Nuova scheda",wu:5,cd:5,ex:[]});cur=0;c=true}
+ const p=S.plans[cur],x=E[i];p.ex.push({n:x[0],s:3,r:x[2]=="Corpo libero"?"12":"10",t:60,kg:0});save();
+ lmsg="Aggiunto a «"+p.name+"»: "+x[0];if(c)render();else $("lm").textContent=lmsg;
+}
+function kgAdj(i,d){const e=S.plans[cur].ex[i];e.kg=Math.max(0,(+e.kg||0)+d);save();render()}
+function setDone(i,j){const k=i+"-"+j;sd[k]=!sd[k];lk=sd[k]?k:"";save();if(sd[k]){const e=S.plans[cur].ex[i];if(e.t>0)tStart(e.t)}render()}
+
+let T={end:0,iv:null},AC=null;
+function tStart(s,l){tStop();$("tl").textContent=l||"Recupero";try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}T.end=Date.now()+s*1000;$("timer").style.display="flex";tick();T.iv=setInterval(tick,250)}
+function tick(){const l=Math.ceil((T.end-Date.now())/1000);if(l<=0){beep();tStop();return}$("tv").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0")}
+function tAdd(s){T.end+=s*1000;tick()}
+function tStop(){clearInterval(T.iv);$("timer").style.display="none"}
+function beep(){try{navigator.vibrate&&navigator.vibrate([300,100,300]);if(!AC)return;[0,.25,.5].forEach(d=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+d);o.stop(AC.currentTime+d+.15)})}catch(e){}}
+
+let ftxt="";
+const r1=v=>Math.round(v*10)/10;
+const DB=[
+["Pasta e cereali","Pasta di semola cruda,353,72,12,1.5;Pasta di semola cotta,158,31,5.5,0.9;Pasta integrale cruda,324,62,13,2.5;Pasta all’uovo cruda,368,71,13,2.5;Riso bianco crudo,354,79,7,0.6;Riso bianco cotto,130,28,2.7,0.3;Riso integrale crudo,350,74,7.5,2.5;Riso basmati crudo,350,77,8,0.7;Riso venere crudo,350,74,8.5,2;Farro perlato crudo,335,67,15,2.5;Orzo perlato crudo,330,70,10,1.4;Couscous crudo,360,73,12,1.5;Quinoa cruda,368,64,14,6;Fiocchi d’avena,372,60,13.5,7;Cornflakes,378,84,7,0.9;Muesli,365,66,10,6;Polenta istantanea secca,350,77,8,1;Polenta cotta,70,15,1.6,0.3;Semolino,360,73,11,1;Gnocchi di patate,150,32,3.5,0.4;Tortellini freschi,290,40,12,9;Ravioli ricotta e spinaci,245,36,10,7;Farina 00,340,76,11,0.9;Farina integrale,335,63,12,2"],
+["Pane e prodotti da forno","Pane bianco,275,60,8.5,0.5;Pane integrale,240,48,9,1.5;Pane di segale,250,52,8,1.5;Pane carasau,360,72,12,2;Piadina,320,50,8,10;Grissini,420,71,12,9;Cracker salati,430,68,10,12;Cracker integrali,420,64,11,13;Fette biscottate,400,75,11,5;Fette biscottate integrali,385,66,12,6;Focaccia,290,45,8,9;Pizza margherita,270,34,11,10;Pane in cassetta,265,50,8,3.5;Pancarré integrale,240,43,10,3;Michetta,285,62,9,0.8;Panino al latte,300,53,9,6;Taralli,440,61,9,17;Cornetto semplice,400,48,8,19;Cornetto alla marmellata,380,57,7,14;Gallette di riso,385,81,8,2.8;Gallette di mais,380,80,7,3"],
+["Carni bianche e rosse","Petto di pollo crudo,110,0,23,1.5;Petto di pollo cotto,165,0,31,3.6;Coscia di pollo senza pelle,130,0,19.5,5.5;Pollo arrosto con pelle,215,0,25,12;Petto di tacchino crudo,107,0,24,1;Petto di tacchino cotto,135,0,29,1.5;Fesa di tacchino affettata,105,1,21,1.5;Coniglio,130,0,21,5;Manzo magro,130,0,21,5;Controfiletto di manzo,180,0,21,10;Filetto di manzo,150,0,21,7;Macinato di manzo magro,150,0,20,7.5;Macinato di manzo medio,220,0,18,16;Hamburger di manzo cotto,250,0,26,16;Vitello,110,0,21,3;Lonza di maiale,157,0,21,7.5;Braciola di maiale,170,0,20,10;Agnello,200,0,19,14;Fegato di bovino,135,3,20,4;Salsiccia di maiale,300,0.5,15,27;Prosciutto cotto,215,0.5,19,15;Prosciutto crudo,270,0,26,18.5;Bresaola,150,0,32,2.6;Speck,300,0.5,28,20;Mortadella,310,1,14,28;Salame,430,1,25,36;Wurstel,270,2,12,24"],
+["Pesce e frutti di mare","Salmone fresco,185,0,20,12;Salmone affumicato,180,0,25,8.5;Tonno fresco,145,0,24,5;Tonno al naturale,105,0,24,1;Tonno sott’olio sgocciolato,200,0,27,10;Merluzzo,75,0,17,0.5;Nasello,80,0,17,1;Orata,105,0,19,3;Branzino,100,0,18.5,3;Sogliola,85,0,17,1.5;Platessa,90,0,17,2;Trota,120,0,19,5;Sgombro,205,0,19,14;Sardine fresche,135,0,20,6;Alici fresche,100,0,17,3.5;Acciughe sott’olio,210,0,29,10;Pesce spada,125,0,19,5;Cernia,90,0,19,1.5;Gamberi,85,1,18,1;Calamari,75,1,15,1.5;Polpo,82,2,15,1;Seppie,70,0,14,1;Cozze,85,3.5,11.5,2;Vongole,70,3,11,1;Surimi,95,9,8,1;Bastoncini di pesce,220,20,12,10"],
+["Latticini e formaggi","Latte intero,64,4.9,3.3,3.6;Latte parzialmente scremato,46,5,3.4,1.6;Latte scremato,35,5,3.4,0.2;Latte di soia,40,2.5,3.3,1.8;Latte di avena,45,7,1,1.5;Latte di mandorla,25,3,0.5,1.2;Yogurt bianco intero,66,4.5,3.8,3.9;Yogurt bianco magro,40,5,4,0.2;Yogurt greco 0%,55,4,10,0.2;Yogurt greco intero,115,4,5,9;Skyr,63,4,11,0.2;Kefir,52,4.5,3.4,2.5;Ricotta di vacca,146,3.5,8.8,10.9;Mozzarella di vacca,253,0.7,18.7,19.5;Mozzarella di bufala,288,0.4,16.7,24.4;Parmigiano Reggiano,392,0,33,28;Grana Padano,384,0,33,28;Pecorino romano,392,0.3,31,29;Fiocchi di latte,95,3.5,11,4;Feta,265,4,14,21;Gorgonzola,330,0.1,19,28;Provolone,370,2,26,28;Asiago,350,0,25,28;Emmentaler,390,0,28,30;Scamorza,334,1,25,25;Caciotta,335,0.5,22,27;Taleggio,315,0.5,19,26;Stracchino,290,2,16,24;Formaggio spalmabile,250,4,6,23;Mascarpone,430,3,4.5,44;Panna da cucina,290,3.5,2.3,30"],
+["Uova","Uovo intero,143,0.7,12.5,9.5;Albume,45,0.8,10.5,0.1;Tuorlo,322,3.6,16,27;Uovo sodo,155,1,13,11;Uovo di quaglia,158,0.4,13,11"],
+["Legumi","Ceci secchi,320,46,21,6;Ceci cotti,125,17,7.5,2.5;Lenticchie secche,310,50,23,1.5;Lenticchie cotte,100,15,8,0.6;Fagioli cannellini secchi,300,48,22,1.5;Fagioli cannellini in scatola,100,15,7,0.5;Fagioli borlotti secchi,310,47,20,2;Fagioli borlotti in scatola,105,16,7,0.5;Piselli freschi,80,11,5.5,0.5;Piselli in scatola,65,9,5,0.5;Fave fresche,70,10,5.5,0.5;Soia secca,390,23,36,19;Edamame,120,9,12,5;Tofu,76,2,8,4.8;Tempeh,190,9,19,11;Seitan,125,4,24,2;Hummus,230,14,8,16;Farina di ceci,330,50,22,6;Pasta di ceci cruda,335,52,21,6"],
+["Frutta","Mela,52,14,0.3,0.2;Pera,57,15,0.4,0.1;Banana,89,23,1.1,0.3;Arancia,47,12,0.9,0.1;Mandarino,45,11,0.8,0.3;Clementine,47,12,0.9,0.2;Pompelmo,42,11,0.8,0.1;Limone,29,9,1.1,0.3;Kiwi,61,15,1.1,0.5;Fragole,32,8,0.7,0.3;Mirtilli,57,14,0.7,0.3;Lamponi,52,12,1.2,0.7;More,43,10,1.4,0.5;Ciliegie,63,16,1,0.2;Albicocche,48,11,1.4,0.4;Pesca,39,10,0.9,0.3;Nettarina,44,11,1.1,0.3;Prugne,46,11,0.7,0.3;Uva,69,18,0.7,0.2;Anguria,30,8,0.6,0.2;Melone,34,8,0.8,0.2;Ananas,50,13,0.5,0.1;Mango,60,15,0.8,0.4;Papaya,43,11,0.5,0.3;Fichi freschi,74,19,0.8,0.3;Cachi,70,19,0.6,0.2;Melograno,83,19,1.7,1.2;Avocado,160,9,2,15;Datteri secchi,282,75,2.5,0.4;Uvetta,300,79,3,0.5;Albicocche secche,241,63,3.4,0.5;Prugne secche,240,64,2.2,0.4;Fichi secchi,249,64,3.3,0.9"],
+["Verdura e ortaggi","Zucchine,17,3,1.2,0.3;Melanzane,25,6,1,0.2;Peperoni,31,6,1,0.3;Pomodori,18,3.9,0.9,0.2;Passata di pomodoro,30,5,1.5,0.2;Carote,41,10,0.9,0.2;Cipolla,40,9,1.1,0.1;Aglio,149,33,6.4,0.5;Spinaci,23,3.6,2.9,0.4;Bietole,19,3.7,1.8,0.2;Broccoli,34,7,2.8,0.4;Cavolfiore,25,5,1.9,0.3;Cavolo cappuccio,25,6,1.3,0.1;Cavolo nero,50,9,4,0.9;Cavoletti di Bruxelles,43,9,3.4,0.3;Cime di rapa,22,3,3,0.4;Lattuga,15,2.9,1.4,0.2;Lattuga iceberg,14,3,0.9,0.1;Rucola,25,3.7,2.6,0.7;Radicchio,23,4.5,1.4,0.3;Finocchi,31,7,1.2,0.2;Sedano,16,3,0.7,0.2;Cetrioli,15,3.6,0.7,0.1;Fagiolini,31,7,1.8,0.2;Asparagi,20,3.9,2.2,0.1;Carciofi,47,11,3.3,0.2;Zucca,26,6.5,1,0.1;Patate,77,17,2,0.1;Patate dolci,86,20,1.6,0.1;Barbabietola,43,10,1.6,0.2;Rapanelli,16,3.4,0.7,0.1;Porri,61,14,1.5,0.3;Funghi champignon,22,3.3,3.1,0.3;Funghi porcini,26,3.5,3.5,0.4;Mais dolce,86,19,3.3,1.2;Olive nere,115,6,0.8,10.7"],
+["Frutta secca e semi","Mandorle,579,22,21,50;Noci,654,14,15,65;Nocciole,628,17,15,61;Pistacchi,560,28,20,45;Anacardi,553,30,18,44;Arachidi,567,16,26,49;Noci pecan,691,14,9,72;Noci del Brasile,656,12,14,66;Pinoli,673,13,14,68;Semi di zucca,559,11,30,49;Semi di girasole,584,20,21,51;Semi di chia,486,42,17,31;Semi di lino,534,29,18,42;Semi di sesamo,573,23,18,50;Burro di arachidi,588,20,25,50;Burro di mandorle,614,19,21,56;Cocco fresco,354,15,3.3,33;Cocco rapè,660,24,7,62;Castagne,165,36,3,2"],
+["Condimenti e oli","Olio extravergine di oliva,884,0,0,100;Olio di semi di girasole,884,0,0,100;Olio di semi di mais,884,0,0,100;Olio di cocco,862,0,0,100;Burro,750,0.5,0.8,83;Margarina,720,0.5,0.2,80;Strutto,900,0,0,100;Maionese,680,1,1.5,75;Ketchup,100,24,1.2,0.1;Senape,70,6,4,3.5;Aceto balsamico,88,17,0.5,0;Aceto di vino,19,0.6,0,0;Salsa di soia,60,5,8,0.1;Pesto alla genovese,460,5,5,46;Sugo di pomodoro pronto,50,8,1.5,1.5;Ragù di carne,150,6,9,10;Besciamella,120,10,4,7;Zucchero bianco,392,100,0,0;Miele,304,82,0.3,0;Sciroppo d’acero,260,67,0,0;Tahina,595,21,17,54"],
+["Dolci e snack","Cioccolato fondente,570,46,8,40;Cioccolato al latte,535,59,7.6,30;Cioccolato bianco,540,59,6,32;Crema di nocciole,540,57,6,31;Marmellata,250,60,0.5,0.1;Gelato alla crema,200,23,3.5,11;Sorbetto al limone,130,32,0.5,0;Merendina al cioccolato,410,56,6,18;Frollini,450,70,7,16;Biscotti secchi,430,76,7,10;Biscotti integrali,440,66,8,16;Wafer,500,66,6,24;Savoiardi,390,80,9,4;Ciambellone,380,58,6,14;Crostata alla marmellata,390,62,5,14;Tiramisù,285,26,5,18;Panettone,360,55,7,12;Pandoro,400,55,6,17;Budino,120,20,3,3;Patatine in sacchetto,540,52,6.5,34;Patatine fritte,310,41,3.5,15;Popcorn,380,74,12,4.5;Barretta di cereali,390,70,6,9;Barretta proteica,360,35,30,12;Caramelle gommose,340,78,6,0.1"],
+["Bevande","Succo d’arancia,45,10,0.7,0.2;Cola,42,10.6,0,0;Birra,43,3.6,0.5,0;Vino rosso,85,2.6,0.1,0;Caffè espresso,2,0.3,0.1,0"]
+];
+const FOODS=DB.flatMap(([c,s])=>s.split(";").map(r=>{const a=r.split(",");return{n:a[0],c,k:+a[1],h:+a[2],p:+a[3],f:+a[4]}}));
+const ID=[
+["Pasta integrale al pomodoro con petto di pollo e zucchine",620,45,78,12,"on","c"],
+["Riso basmati con merluzzo al forno e verdure",560,42,72,9,"on","c"],
+["Patate lesse con tonno al naturale, insalata e un cucchiaio d’olio",540,40,62,14,"on","c"],
+["Gnocchi al pomodoro con parmigiano e fagiolini",590,22,98,11,"on","c"],
+["Couscous con ceci, verdure e bresaola",580,32,82,12,"on","c"],
+["Pane integrale con frittata di 2 uova, spinaci e una banana",540,30,62,18,"on","c"],
+["Insalatona con tonno, uova sode, avocado e pane integrale",480,36,30,24,"off","p"],
+["Zuppa di legumi con verdure e una fetta di pane integrale",430,24,55,9,"off","p"],
+["Petto di tacchino alla piastra con insalata mista e ceci",420,45,28,12,"off","p"],
+["Filetto di salmone con verdure grigliate e olio d’oliva",520,38,10,34,"off","c"],
+["Orata al forno con broccoli e un filo d’olio",380,40,6,20,"off","c"],
+["Petto di pollo con verdure e un filo d’olio",380,48,8,16,"off","c"],
+["Frittata di 2 uova con verdure e ricotta",400,30,10,26,"off","c"],
+["Tagliata di manzo con rucola e pomodorini",450,42,5,28,"off","c"]
+];
+let fq="",fsel=-1,fg=100,fcat="Tutte",fmsg="";
+function flist(){
+ const q=fq.trim().toLowerCase(),L=FOODS.map((x,i)=>[x,i]).filter(([x])=>(fcat=="Tutte"||x.c==fcat)&&(!q||x.n.toLowerCase().includes(q)||x.c.toLowerCase().includes(q)));
+ return L.length?L.slice(0,60).map(([x,i])=>`<button class="${fsel==i?"on":""}" style="width:100%;justify-content:space-between;margin-top:8px;border-radius:20px;text-align:left" onclick="fpick(${i})"><span><b>${esc(x.n)}</b><br><span style="font-weight:400;font-size:13px">${x.c}</span></span><span>${x.k} kcal</span></button>`).join("")+(L.length>60?`<p class="mute">Altri ${L.length-60} risultati: scrivi di più per restringere.</p>`:""):`<p class="mute">Nessun alimento trovato. Prova un’altra parola o usa l’aggiunta manuale.</p>`;
+}
+function fcalc(){const x=FOODS[fsel];if(!x)return "";const m=fg/100;return Math.round(x.k*m)+" kcal, carboidrati "+r1(x.h*m)+" g, proteine "+r1(x.p*m)+" g, grassi "+r1(x.f*m)+" g"}
+function fpick(i){fsel=i;fg=100;fmsg="";render()}
+function fadd(){
+ const x=FOODS[fsel];if(!x||!(fg>0))return;const m=fg/100;
+ (S.food[td()]=S.food[td()]||[]).push({n:x.n+", "+fg+" g",k:Math.round(x.k*m),p:r1(x.p*m),c:r1(x.h*m),f:r1(x.f*m)});
+ fmsg="Aggiunto: "+x.n;fsel=-1;fq="";save();render();
+}
+function addQ(){const k=Math.round(+$("qk").value);if(!(k>0))return;(S.food[td()]=S.food[td()]||[]).push({n:$("qn").value.trim()||"Aggiunta manuale",k});save();render()}
+function dinner(){
+ const c=calc(),e=tot(),r={k:c.target-e.k,p:Math.max(0,c.pr-e.p),c:Math.max(0,c.ca-e.c),f:Math.max(0,c.fa-e.f)};
+ if(r.k<=0)return `<p class="mute">Hai già raggiunto il target di oggi. Se hai ancora fame scegli verdure e proteine magre.</p>`;
+ const v=[r.p,r.c,r.f],nv=Math.hypot(...v)||1;
+ const pick=(m,n,lim)=>{const s=ID.filter(x=>x[5]==(c.t?"on":"off")&&x[6]==m).map(x=>({x,s:(x[2]*v[0]+x[3]*v[1]+x[4]*v[2])/(Math.hypot(x[2],x[3],x[4])*nv)}));let o=s.filter(y=>y.x[1]<=lim).sort((a,b)=>b.s-a.s);if(!o.length)o=s.sort((a,b)=>a.x[1]-b.x[1]);return o.slice(0,n).map(y=>y.x)};
+ const row=x=>`<div class="food"><div style="flex:1">${esc(x[0])}<br><span class="mute">circa ${x[1]} kcal, P ${x[2]} g, C ${x[3]} g, G ${x[4]} g</span></div></div>`;
+ const blk=(t,L)=>`<div class="mute" style="margin-top:12px;font-weight:600">${t}</div>${L.map(row).join("")}`;
+ return `<p class="mute" style="margin:0">Ti restano ${r.k} kcal: proteine ${Math.round(r.p)} g, carboidrati ${Math.round(r.c)} g, grassi ${Math.round(r.f)} g. ${c.t?"Giorno di allenamento: idee più ricche di carboidrati complessi per il recupero.":"Giorno di riposo: idee leggere, ricche di proteine, fibre e grassi buoni, con carboidrati moderati."}</p>`+(c.t?blk("Cena",pick("c",3,r.k+100)):blk("Pranzo",pick("p",2,r.k*.6+100))+blk("Cena",pick("c",2,r.k+100)))+`<p class="mute" style="margin:12px 0 0">Porzioni indicative: adattale alle calorie che ti restano.</p>`;
+}
+function food(){
+ const f=S.food[td()]||[],e=tot(),c=calc(),left=c.target-e.k,pct=Math.min(100,Math.round(e.k/c.target*100));
+ return `<h1>Nutrizione</h1>
+ <div class="card"><div class="row sp"><div><div class="mute">Calorie rimanenti</div><div class="big" style="color:${left<0?"var(--org)":"var(--ink)"}">${Math.abs(left)}</div><div class="mute">${left<0?"oltre il target":"ancora disponibili"}</div></div><div class="mute" style="text-align:right">Target ${c.target} kcal<br>Mangiate ${e.k} kcal</div></div>
+ <div style="height:12px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:14px"><i style="display:block;height:100%;width:${pct}%;background:${left<0?"var(--org)":"var(--lime)"}"></i></div>
+ <p class="mute" style="margin:12px 0 0">Proteine ${r1(e.p)} / ${c.pr} g, carboidrati ${r1(e.c)} / ${c.ca} g, grassi ${r1(e.f)} / ${c.fa} g</p></div>
+ <div class="card"><h3>Cerca un alimento</h3>
+ <input id="fs" style="margin-top:12px" value="${esc(fq)}" placeholder="Es. pasta, bresaola, yogurt greco" oninput="fq=this.value;$('fl').innerHTML=flist()">
+ <label style="margin-top:10px">Categoria<select onchange="fcat=this.value;$('fl').innerHTML=flist()">${["Tutte",...DB.map(d=>d[0])].map(x=>`<option ${fcat==x?"selected":""}>${x}</option>`).join("")}</select></label>
+ ${fmsg?`<p class="mute" role="status" style="margin:12px 0 0;color:var(--lime)">${esc(fmsg)}</p>`:""}
+ ${fsel>=0?`<div style="margin-top:14px;padding:14px;border-radius:20px;background:rgba(198,255,61,.08)"><b>${esc(FOODS[fsel].n)}</b><span class="mute"> (valori per 100 g: ${FOODS[fsel].k} kcal)</span><label style="margin-top:10px">Quanti grammi hai mangiato?<input type="number" inputmode="decimal" min="1" value="${fg}" oninput="fg=+this.value||0;$('fcl').textContent=fcalc()"></label><p id="fcl" style="margin:10px 0 0;font-weight:600">${fcalc()}</p><button class="pri" style="margin-top:12px" onclick="fadd()">${I("plus",16)}Aggiungi al diario</button></div>`:""}
+ <div id="fl">${flist()}</div></div>
+ <div class="card"><h3>Aggiungi calorie manualmente</h3><div class="row" style="margin-top:12px"><label style="flex:2">Nome (facoltativo)<input id="qn" placeholder="Es. Cena al ristorante"></label><label>Kcal totali<input id="qk" type="number" inputmode="numeric"></label></div><button class="pri" style="margin-top:12px" onclick="addQ()">${I("plus",16)}Aggiungi</button></div>
+ <div class="card"><h3>Cosa mangiare a cena?</h3><div style="margin-top:10px">${dinner()}</div></div>
+ <div class="card"><div class="row sp"><h3>Foto del pasto</h3><button onclick="$('pf').click()">${I("camera",16)}Scatta</button></div><input id="pf" type="file" accept="image/*" capture="environment" hidden onchange="analyze(this)">${pendUI()}</div>
+ <h2>Diario di oggi</h2><div class="card" style="padding-top:8px;padding-bottom:8px">${f.map((x,i)=>`<div class="food"><div style="flex:1">${esc(x.n)}${x.p||x.c||x.f?`<br><span class="mute">C ${r1(x.c||0)} g, P ${r1(x.p||0)} g, G ${r1(x.f||0)} g</span>`:""}</div><b>${x.k} kcal</b><button style="padding:8px 14px" onclick="S.food[td()].splice(${i},1);save();render()">Elimina</button></div>`).join("")||`<p class="mute">Ancora niente per oggi. Aggiungi il primo pasto.</p>`}</div>`;
+}
+function pendUI(){
+ if(pmsg&&!pend.length)return `<p class="mute" role="status" style="margin:14px 0 0">${esc(pmsg)}</p>`;
+ if(!pend.length)return "";
+ return `<div style="margin-top:16px"><b>Ecco le calorie stimate</b><p class="mute" style="margin:2px 0 0">Sono stime: correggi le kcal se serve.</p>${pend.map((x,i)=>`<div class="sw"><span style="flex:1">${esc(x.n)}<br><span class="mute">${esc(x.q)}</span></span><input type="number" aria-label="Kcal" value="${x.k}" onchange="pend[${i}].k=+this.value||0"><button class="ic" aria-label="Rimuovi" onclick="pend.splice(${i},1);render()">${I("x",16)}</button></div>`).join("")}<div class="row" style="margin-top:10px"><button class="pri" onclick="addP()">${I("check",16)}Aggiungi al diario</button><button onclick="pend=[];pmsg='';render()">Scarta</button></div></div>`;
+}
+function addP(){const a=S.food[td()]=S.food[td()]||[];pend.forEach(x=>{if(x.k>0)a.push({n:x.n+(x.q?" ("+x.q+")":""),k:x.k})});pend=[];pmsg="";ftxt="";save();render()}
+const FMT='Rispondi solo con un array JSON di oggetti {"n": nome in italiano, "q": porzione stimata, ad esempio "circa 150 g", "k": kcal intere per quella porzione}.';
+function analyze(inp){const f=inp.files[0];inp.value="";if(f)ask("Guarda la foto di un pasto ed elenca ogni alimento o bevanda visibile con una stima realistica di porzione e calorie. "+FMT+" Se nella foto non c’è cibo rispondi con [].",f)}
+async function ask(prompt,img){
+ pend=[];pmsg=img?"Sto analizzando la foto…":"Sto calcolando le calorie…";render();
+ try{
+  const sample=await claude.use("sample");
+  if(!sample){pmsg="Il calcolo automatico non è disponibile qui.";render();return}
+  const o={cache:false};
+  if(img){const lim=await sample.limits().catch(()=>null);if(!lim||!lim.images){pmsg="L’analisi delle foto non è disponibile qui.";render();return}o.images=[img]}
+  const r=await sample.json(prompt,o);
+  pend=(Array.isArray(r)?r:[]).filter(x=>x&&x.n&&+x.k>0).map(x=>({n:String(x.n),q:String(x.q||""),k:Math.round(+x.k)}));
+  pmsg=pend.length?"":"Non sono riuscito a stimare le calorie. Prova a descrivere meglio il pasto o a fare una foto.";
+ }catch(e){
+  const c=e&&e.code;
+  pmsg=c=="not_granted"?"Per calcolare le calorie devi consentire l’uso di Claude quando te lo chiede.":c=="rate_limited"?"Troppe richieste in poco tempo. Riprova tra poco.":c=="image_rejected"?"Foto non valida. Provane un’altra.":c=="cancelled"?"":"Calcolo non riuscito. Riprova tra poco.";
+ }
+ render();
+}
+function settings(){
+ const p=S.prof,c=calc(),goals={lose:["Dimagrire","trending-down"],keep:["Mantenere","minus"],gain:["Massa muscolare","trending-up"]};
+ const inp=(l,k)=>`<label>${l}<input type="number" value="${p[k]}" onchange="S.prof.${k}=+this.value||0;save()"></label>`;
+ return `<h1>Impostazioni</h1><h2 style="margin-top:18px">Obiettivo</h2><div class="chips">${Object.keys(goals).map(g=>`<button class="${p.goal==g?"on":""}" onclick="S.prof.goal='${g}';save();render()">${I(goals[g][1],16)}${goals[g][0]}</button>`).join("")}</div>
+ <h2>Profilo</h2><div class="card"><div class="row"><label>Sesso<select onchange="S.prof.sex=this.value;save()"><option value="m" ${p.sex=="m"?"selected":""}>Uomo</option><option value="f" ${p.sex=="f"?"selected":""}>Donna</option></select></label>${inp("Età","age")}</div>
+ <div class="row" style="margin-top:10px">${inp("Peso (kg)","w")}${inp("Altezza (cm)","h")}</div>
+ <label style="margin-top:10px">Attività fuori dalla palestra<select onchange="S.prof.act=+this.value;save()"><option value="1.2" ${p.act==1.2?"selected":""}>Poca (lavoro seduto)</option><option value="1.375" ${p.act==1.375?"selected":""}>Moderata (in piedi o camminate)</option><option value="1.55" ${p.act==1.55?"selected":""}>Alta (lavoro fisico)</option></select></label></div>
+ <h2>Obiettivo passi</h2><div class="card"><label>Passi al giorno<input type="number" inputmode="numeric" value="${S.sgoal||10000}" onchange="S.sgoal=+this.value||10000;save();render()"></label></div>
+ <h2>Giorni di allenamento</h2><div class="card"><div class="chips">${[1,2,3,4,5,6,0].map(d=>`<button class="${S.days.includes(d)?"on":""}" onclick="togDay(${d})">${D[d]}</button>`).join("")}</div>
+ <div class="row sp" style="margin-top:16px"><span class="mute">Oggi: ${isTrain()?"allenamento":"riposo"}</span><button onclick="S.ov[td()]=!isTrain();save();render()">${I("repeat",16)}Cambia solo oggi</button></div></div>
+ <p class="mute">Metabolismo basale ${c.bmr} kcal (Mifflin-St Jeor). Nei giorni di allenamento si aggiungono 300 kcal; obiettivo: ${c.adj>0?"+":""}${c.adj} kcal. Le stime non sostituiscono un nutrizionista.</p>`;
+}
+function stepsCard(){
+ const n=(S.steps||{})[td()]||0,g=S.sgoal||10000,kc=Math.round(n*.04*S.prof.w/70);
+ return `<div class="card"><div class="row sp"><h3>Passi</h3>${I("footprints",22)}</div><div class="row" style="gap:18px;margin-top:12px">${ring(n/g,96,10,"var(--sky)",`<b>${Math.round(Math.min(n/g,9.99)*100)}%</b>`)}<div style="flex:1"><div class="big" style="font-size:34px">${n.toLocaleString("it-IT")}</div><div class="mute">su ${g.toLocaleString("it-IT")}, circa ${kc} kcal bruciate</div></div></div>
+ <div class="row" style="margin-top:14px;align-items:flex-end"><label>Passi di oggi (dal tuo Huawei Health)<input id="sn" type="number" inputmode="numeric" placeholder="Es. 6500"></label><button class="pri" onclick="setSteps()">${I("check",16)}Salva</button></div></div>`;
+}
+function setSteps(){const v=$("sn").value;if(v===""||!(+v>=0))return;(S.steps=S.steps||{})[td()]=Math.round(+v);save();render()}
+function histCard(){
+ const rows=[];for(let i=0;i<7;i++){const dt=new Date();dt.setDate(dt.getDate()-i);const k=dt.toLocaleDateString("sv"),f=(S.food[k]||[]).reduce((a,x)=>a+x.k,0),st=S.steps[k]||0,w=S.hist.filter(h=>h.d==k).reduce((a,h)=>a+h.k,0);
+  if(f||st||w)rows.push(`<div class="food"><b style="min-width:64px">${i?dt.toLocaleDateString("it-IT",{weekday:"short",day:"numeric"}):"Oggi"}</b><span class="mute" style="flex:1;text-align:right">${st.toLocaleString("it-IT")} passi, ${f} kcal mangiate${w?", "+w+" kcal allenamento":""}</span></div>`)}
+ return rows.length?`<div class="card" style="padding-top:8px;padding-bottom:8px"><h3 style="margin:12px 0 4px">Ultimi 7 giorni</h3>${rows.join("")}</div>`:"";
+}
+function togDay(d){const i=S.days.indexOf(d);i<0?S.days.push(d):S.days.splice(i,1);save();render()}
+render(true);
+</script></body></html>
