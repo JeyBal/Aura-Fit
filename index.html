@@ -247,43 +247,76 @@ function beep(){try{navigator.vibrate&&navigator.vibrate([300,100,300]);if(!AC)r
 
 let ftxt="";
 const r1=v=>Math.round(v*10)/10;
-let fq="",fres=[],fsel=-1,fmsg="",fg=100;
-function fcalc(){const x=fres[fsel];if(!x)return "";const g=fg;return Math.round(x.k*g/100)+" kcal, proteine "+r1(x.p*g/100)+" g, carboidrati "+r1(x.c*g/100)+" g, grassi "+r1(x.f*g/100)+" g"}
-function errMsg(e){const c=e&&e.code;return c=="not_granted"?"Per cercare gli alimenti devi consentire l’uso di Claude quando te lo chiede.":c=="rate_limited"?"Troppe richieste in poco tempo. Riprova tra poco.":c=="cancelled"?"":"Ricerca non riuscita. Riprova oppure usa l’aggiunta rapida manuale."}
-async function fsearch(){
- const q=fq.trim();if(!q)return;
- fres=[];fsel=-1;fmsg="Sto cercando…";render();
- try{
-  const sample=await claude.use("sample");
-  if(!sample){fmsg="La ricerca non è disponibile qui. Usa l’aggiunta rapida manuale.";render();return}
-  const r=await sample.json('Sei un database nutrizionale italiano. Per la ricerca "'+q.replace(/"/g,"'")+'" elenca da 3 a 6 alimenti o prodotti commerciali realistici che corrispondono, con valori medi per 100 g. Rispondi solo con un array JSON di oggetti {"n": nome, "b": marca oppure "", "k": kcal per 100 g, "p": proteine in g per 100 g, "c": carboidrati in g per 100 g, "f": grassi in g per 100 g}. Se la ricerca non è un alimento rispondi con [].');
-  fres=(Array.isArray(r)?r:[]).filter(x=>x&&x.n&&+x.k>=0&&x.k!==""&&x.k!=null).slice(0,6).map(x=>({n:String(x.n),b:String(x.b||""),k:Math.round(+x.k),p:r1(+x.p||0),c:r1(+x.c||0),f:r1(+x.f||0)}));
-  fmsg=fres.length?"":"Nessun risultato. Prova con un altro nome oppure usa l’aggiunta rapida manuale.";
- }catch(e){fmsg=errMsg(e)}
- render();
+const DB=[
+["Pasta e cereali","Pasta di semola cruda,353,72,12,1.5;Pasta di semola cotta,158,31,5.5,0.9;Pasta integrale cruda,324,62,13,2.5;Pasta all’uovo cruda,368,71,13,2.5;Riso bianco crudo,354,79,7,0.6;Riso bianco cotto,130,28,2.7,0.3;Riso integrale crudo,350,74,7.5,2.5;Riso basmati crudo,350,77,8,0.7;Riso venere crudo,350,74,8.5,2;Farro perlato crudo,335,67,15,2.5;Orzo perlato crudo,330,70,10,1.4;Couscous crudo,360,73,12,1.5;Quinoa cruda,368,64,14,6;Fiocchi d’avena,372,60,13.5,7;Cornflakes,378,84,7,0.9;Muesli,365,66,10,6;Polenta istantanea secca,350,77,8,1;Polenta cotta,70,15,1.6,0.3;Semolino,360,73,11,1;Gnocchi di patate,150,32,3.5,0.4;Tortellini freschi,290,40,12,9;Ravioli ricotta e spinaci,245,36,10,7;Farina 00,340,76,11,0.9;Farina integrale,335,63,12,2"],
+["Pane e prodotti da forno","Pane bianco,275,60,8.5,0.5;Pane integrale,240,48,9,1.5;Pane di segale,250,52,8,1.5;Pane carasau,360,72,12,2;Piadina,320,50,8,10;Grissini,420,71,12,9;Cracker salati,430,68,10,12;Cracker integrali,420,64,11,13;Fette biscottate,400,75,11,5;Fette biscottate integrali,385,66,12,6;Focaccia,290,45,8,9;Pizza margherita,270,34,11,10;Pane in cassetta,265,50,8,3.5;Pancarré integrale,240,43,10,3;Michetta,285,62,9,0.8;Panino al latte,300,53,9,6;Taralli,440,61,9,17;Cornetto semplice,400,48,8,19;Cornetto alla marmellata,380,57,7,14;Gallette di riso,385,81,8,2.8;Gallette di mais,380,80,7,3"],
+["Carni bianche e rosse","Petto di pollo crudo,110,0,23,1.5;Petto di pollo cotto,165,0,31,3.6;Coscia di pollo senza pelle,130,0,19.5,5.5;Pollo arrosto con pelle,215,0,25,12;Petto di tacchino crudo,107,0,24,1;Petto di tacchino cotto,135,0,29,1.5;Fesa di tacchino affettata,105,1,21,1.5;Coniglio,130,0,21,5;Manzo magro,130,0,21,5;Controfiletto di manzo,180,0,21,10;Filetto di manzo,150,0,21,7;Macinato di manzo magro,150,0,20,7.5;Macinato di manzo medio,220,0,18,16;Hamburger di manzo cotto,250,0,26,16;Vitello,110,0,21,3;Lonza di maiale,157,0,21,7.5;Braciola di maiale,170,0,20,10;Agnello,200,0,19,14;Fegato di bovino,135,3,20,4;Salsiccia di maiale,300,0.5,15,27;Prosciutto cotto,215,0.5,19,15;Prosciutto crudo,270,0,26,18.5;Bresaola,150,0,32,2.6;Speck,300,0.5,28,20;Mortadella,310,1,14,28;Salame,430,1,25,36;Wurstel,270,2,12,24"],
+["Pesce e frutti di mare","Salmone fresco,185,0,20,12;Salmone affumicato,180,0,25,8.5;Tonno fresco,145,0,24,5;Tonno al naturale,105,0,24,1;Tonno sott’olio sgocciolato,200,0,27,10;Merluzzo,75,0,17,0.5;Nasello,80,0,17,1;Orata,105,0,19,3;Branzino,100,0,18.5,3;Sogliola,85,0,17,1.5;Platessa,90,0,17,2;Trota,120,0,19,5;Sgombro,205,0,19,14;Sardine fresche,135,0,20,6;Alici fresche,100,0,17,3.5;Acciughe sott’olio,210,0,29,10;Pesce spada,125,0,19,5;Cernia,90,0,19,1.5;Gamberi,85,1,18,1;Calamari,75,1,15,1.5;Polpo,82,2,15,1;Seppie,70,0,14,1;Cozze,85,3.5,11.5,2;Vongole,70,3,11,1;Surimi,95,9,8,1;Bastoncini di pesce,220,20,12,10"],
+["Latticini e formaggi","Latte intero,64,4.9,3.3,3.6;Latte parzialmente scremato,46,5,3.4,1.6;Latte scremato,35,5,3.4,0.2;Latte di soia,40,2.5,3.3,1.8;Latte di avena,45,7,1,1.5;Latte di mandorla,25,3,0.5,1.2;Yogurt bianco intero,66,4.5,3.8,3.9;Yogurt bianco magro,40,5,4,0.2;Yogurt greco 0%,55,4,10,0.2;Yogurt greco intero,115,4,5,9;Skyr,63,4,11,0.2;Kefir,52,4.5,3.4,2.5;Ricotta di vacca,146,3.5,8.8,10.9;Mozzarella di vacca,253,0.7,18.7,19.5;Mozzarella di bufala,288,0.4,16.7,24.4;Parmigiano Reggiano,392,0,33,28;Grana Padano,384,0,33,28;Pecorino romano,392,0.3,31,29;Fiocchi di latte,95,3.5,11,4;Feta,265,4,14,21;Gorgonzola,330,0.1,19,28;Provolone,370,2,26,28;Asiago,350,0,25,28;Emmentaler,390,0,28,30;Scamorza,334,1,25,25;Caciotta,335,0.5,22,27;Taleggio,315,0.5,19,26;Stracchino,290,2,16,24;Formaggio spalmabile,250,4,6,23;Mascarpone,430,3,4.5,44;Panna da cucina,290,3.5,2.3,30"],
+["Uova","Uovo intero,143,0.7,12.5,9.5;Albume,45,0.8,10.5,0.1;Tuorlo,322,3.6,16,27;Uovo sodo,155,1,13,11;Uovo di quaglia,158,0.4,13,11"],
+["Legumi","Ceci secchi,320,46,21,6;Ceci cotti,125,17,7.5,2.5;Lenticchie secche,310,50,23,1.5;Lenticchie cotte,100,15,8,0.6;Fagioli cannellini secchi,300,48,22,1.5;Fagioli cannellini in scatola,100,15,7,0.5;Fagioli borlotti secchi,310,47,20,2;Fagioli borlotti in scatola,105,16,7,0.5;Piselli freschi,80,11,5.5,0.5;Piselli in scatola,65,9,5,0.5;Fave fresche,70,10,5.5,0.5;Soia secca,390,23,36,19;Edamame,120,9,12,5;Tofu,76,2,8,4.8;Tempeh,190,9,19,11;Seitan,125,4,24,2;Hummus,230,14,8,16;Farina di ceci,330,50,22,6;Pasta di ceci cruda,335,52,21,6"],
+["Frutta","Mela,52,14,0.3,0.2;Pera,57,15,0.4,0.1;Banana,89,23,1.1,0.3;Arancia,47,12,0.9,0.1;Mandarino,45,11,0.8,0.3;Clementine,47,12,0.9,0.2;Pompelmo,42,11,0.8,0.1;Limone,29,9,1.1,0.3;Kiwi,61,15,1.1,0.5;Fragole,32,8,0.7,0.3;Mirtilli,57,14,0.7,0.3;Lamponi,52,12,1.2,0.7;More,43,10,1.4,0.5;Ciliegie,63,16,1,0.2;Albicocche,48,11,1.4,0.4;Pesca,39,10,0.9,0.3;Nettarina,44,11,1.1,0.3;Prugne,46,11,0.7,0.3;Uva,69,18,0.7,0.2;Anguria,30,8,0.6,0.2;Melone,34,8,0.8,0.2;Ananas,50,13,0.5,0.1;Mango,60,15,0.8,0.4;Papaya,43,11,0.5,0.3;Fichi freschi,74,19,0.8,0.3;Cachi,70,19,0.6,0.2;Melograno,83,19,1.7,1.2;Avocado,160,9,2,15;Datteri secchi,282,75,2.5,0.4;Uvetta,300,79,3,0.5;Albicocche secche,241,63,3.4,0.5;Prugne secche,240,64,2.2,0.4;Fichi secchi,249,64,3.3,0.9"],
+["Verdura e ortaggi","Zucchine,17,3,1.2,0.3;Melanzane,25,6,1,0.2;Peperoni,31,6,1,0.3;Pomodori,18,3.9,0.9,0.2;Passata di pomodoro,30,5,1.5,0.2;Carote,41,10,0.9,0.2;Cipolla,40,9,1.1,0.1;Aglio,149,33,6.4,0.5;Spinaci,23,3.6,2.9,0.4;Bietole,19,3.7,1.8,0.2;Broccoli,34,7,2.8,0.4;Cavolfiore,25,5,1.9,0.3;Cavolo cappuccio,25,6,1.3,0.1;Cavolo nero,50,9,4,0.9;Cavoletti di Bruxelles,43,9,3.4,0.3;Cime di rapa,22,3,3,0.4;Lattuga,15,2.9,1.4,0.2;Lattuga iceberg,14,3,0.9,0.1;Rucola,25,3.7,2.6,0.7;Radicchio,23,4.5,1.4,0.3;Finocchi,31,7,1.2,0.2;Sedano,16,3,0.7,0.2;Cetrioli,15,3.6,0.7,0.1;Fagiolini,31,7,1.8,0.2;Asparagi,20,3.9,2.2,0.1;Carciofi,47,11,3.3,0.2;Zucca,26,6.5,1,0.1;Patate,77,17,2,0.1;Patate dolci,86,20,1.6,0.1;Barbabietola,43,10,1.6,0.2;Rapanelli,16,3.4,0.7,0.1;Porri,61,14,1.5,0.3;Funghi champignon,22,3.3,3.1,0.3;Funghi porcini,26,3.5,3.5,0.4;Mais dolce,86,19,3.3,1.2;Olive nere,115,6,0.8,10.7"],
+["Frutta secca e semi","Mandorle,579,22,21,50;Noci,654,14,15,65;Nocciole,628,17,15,61;Pistacchi,560,28,20,45;Anacardi,553,30,18,44;Arachidi,567,16,26,49;Noci pecan,691,14,9,72;Noci del Brasile,656,12,14,66;Pinoli,673,13,14,68;Semi di zucca,559,11,30,49;Semi di girasole,584,20,21,51;Semi di chia,486,42,17,31;Semi di lino,534,29,18,42;Semi di sesamo,573,23,18,50;Burro di arachidi,588,20,25,50;Burro di mandorle,614,19,21,56;Cocco fresco,354,15,3.3,33;Cocco rapè,660,24,7,62;Castagne,165,36,3,2"],
+["Condimenti e oli","Olio extravergine di oliva,884,0,0,100;Olio di semi di girasole,884,0,0,100;Olio di semi di mais,884,0,0,100;Olio di cocco,862,0,0,100;Burro,750,0.5,0.8,83;Margarina,720,0.5,0.2,80;Strutto,900,0,0,100;Maionese,680,1,1.5,75;Ketchup,100,24,1.2,0.1;Senape,70,6,4,3.5;Aceto balsamico,88,17,0.5,0;Aceto di vino,19,0.6,0,0;Salsa di soia,60,5,8,0.1;Pesto alla genovese,460,5,5,46;Sugo di pomodoro pronto,50,8,1.5,1.5;Ragù di carne,150,6,9,10;Besciamella,120,10,4,7;Zucchero bianco,392,100,0,0;Miele,304,82,0.3,0;Sciroppo d’acero,260,67,0,0;Tahina,595,21,17,54"],
+["Dolci e snack","Cioccolato fondente,570,46,8,40;Cioccolato al latte,535,59,7.6,30;Cioccolato bianco,540,59,6,32;Crema di nocciole,540,57,6,31;Marmellata,250,60,0.5,0.1;Gelato alla crema,200,23,3.5,11;Sorbetto al limone,130,32,0.5,0;Merendina al cioccolato,410,56,6,18;Frollini,450,70,7,16;Biscotti secchi,430,76,7,10;Biscotti integrali,440,66,8,16;Wafer,500,66,6,24;Savoiardi,390,80,9,4;Ciambellone,380,58,6,14;Crostata alla marmellata,390,62,5,14;Tiramisù,285,26,5,18;Panettone,360,55,7,12;Pandoro,400,55,6,17;Budino,120,20,3,3;Patatine in sacchetto,540,52,6.5,34;Patatine fritte,310,41,3.5,15;Popcorn,380,74,12,4.5;Barretta di cereali,390,70,6,9;Barretta proteica,360,35,30,12;Caramelle gommose,340,78,6,0.1"],
+["Bevande","Succo d’arancia,45,10,0.7,0.2;Cola,42,10.6,0,0;Birra,43,3.6,0.5,0;Vino rosso,85,2.6,0.1,0;Caffè espresso,2,0.3,0.1,0"]
+];
+const FOODS=DB.flatMap(([c,s])=>s.split(";").map(r=>{const a=r.split(",");return{n:a[0],c,k:+a[1],h:+a[2],p:+a[3],f:+a[4]}}));
+const ID=[
+["Pasta integrale al pomodoro con petto di pollo e zucchine",620,45,78,12,"on","c"],
+["Riso basmati con merluzzo al forno e verdure",560,42,72,9,"on","c"],
+["Patate lesse con tonno al naturale, insalata e un cucchiaio d’olio",540,40,62,14,"on","c"],
+["Gnocchi al pomodoro con parmigiano e fagiolini",590,22,98,11,"on","c"],
+["Couscous con ceci, verdure e bresaola",580,32,82,12,"on","c"],
+["Pane integrale con frittata di 2 uova, spinaci e una banana",540,30,62,18,"on","c"],
+["Insalatona con tonno, uova sode, avocado e pane integrale",480,36,30,24,"off","p"],
+["Zuppa di legumi con verdure e una fetta di pane integrale",430,24,55,9,"off","p"],
+["Petto di tacchino alla piastra con insalata mista e ceci",420,45,28,12,"off","p"],
+["Filetto di salmone con verdure grigliate e olio d’oliva",520,38,10,34,"off","c"],
+["Orata al forno con broccoli e un filo d’olio",380,40,6,20,"off","c"],
+["Petto di pollo con verdure e un filo d’olio",380,48,8,16,"off","c"],
+["Frittata di 2 uova con verdure e ricotta",400,30,10,26,"off","c"],
+["Tagliata di manzo con rucola e pomodorini",450,42,5,28,"off","c"]
+];
+let fq="",fsel=-1,fg=100,fcat="Tutte",fmsg="";
+function flist(){
+ const q=fq.trim().toLowerCase(),L=FOODS.map((x,i)=>[x,i]).filter(([x])=>(fcat=="Tutte"||x.c==fcat)&&(!q||x.n.toLowerCase().includes(q)||x.c.toLowerCase().includes(q)));
+ return L.length?L.slice(0,60).map(([x,i])=>`<button class="${fsel==i?"on":""}" style="width:100%;justify-content:space-between;margin-top:8px;border-radius:20px;text-align:left" onclick="fpick(${i})"><span><b>${esc(x.n)}</b><br><span style="font-weight:400;font-size:13px">${x.c}</span></span><span>${x.k} kcal</span></button>`).join("")+(L.length>60?`<p class="mute">Altri ${L.length-60} risultati: scrivi di più per restringere.</p>`:""):`<p class="mute">Nessun alimento trovato. Prova un’altra parola o usa l’aggiunta manuale.</p>`;
 }
+function fcalc(){const x=FOODS[fsel];if(!x)return "";const m=fg/100;return Math.round(x.k*m)+" kcal, carboidrati "+r1(x.h*m)+" g, proteine "+r1(x.p*m)+" g, grassi "+r1(x.f*m)+" g"}
+function fpick(i){fsel=i;fg=100;fmsg="";render()}
 function fadd(){
- const x=fres[fsel];if(!x||!(fg>0))return;
- (S.food[td()]=S.food[td()]||[]).push({n:x.n+(x.b?" ("+x.b+")":"")+", "+fg+" g",k:Math.round(x.k*fg/100),p:r1(x.p*fg/100),c:r1(x.c*fg/100),f:r1(x.f*fg/100)});
- fres=[];fsel=-1;fq="";fmsg="Aggiunto al diario.";save();render();
+ const x=FOODS[fsel];if(!x||!(fg>0))return;const m=fg/100;
+ (S.food[td()]=S.food[td()]||[]).push({n:x.n+", "+fg+" g",k:Math.round(x.k*m),p:r1(x.p*m),c:r1(x.h*m),f:r1(x.f*m)});
+ fmsg="Aggiunto: "+x.n;fsel=-1;fq="";save();render();
 }
-function addQ(){const k=Math.round(+$("qk").value);if(!(k>0))return;(S.food[td()]=S.food[td()]||[]).push({n:$("qn").value.trim()||"Aggiunta rapida",k});save();render()}
+function addQ(){const k=Math.round(+$("qk").value);if(!(k>0))return;(S.food[td()]=S.food[td()]||[]).push({n:$("qn").value.trim()||"Aggiunta manuale",k});save();render()}
+function dinner(){
+ const c=calc(),e=tot(),r={k:c.target-e.k,p:Math.max(0,c.pr-e.p),c:Math.max(0,c.ca-e.c),f:Math.max(0,c.fa-e.f)};
+ if(r.k<=0)return `<p class="mute">Hai già raggiunto il target di oggi. Se hai ancora fame scegli verdure e proteine magre.</p>`;
+ const v=[r.p,r.c,r.f],nv=Math.hypot(...v)||1;
+ const pick=(m,n,lim)=>{const s=ID.filter(x=>x[5]==(c.t?"on":"off")&&x[6]==m).map(x=>({x,s:(x[2]*v[0]+x[3]*v[1]+x[4]*v[2])/(Math.hypot(x[2],x[3],x[4])*nv)}));let o=s.filter(y=>y.x[1]<=lim).sort((a,b)=>b.s-a.s);if(!o.length)o=s.sort((a,b)=>a.x[1]-b.x[1]);return o.slice(0,n).map(y=>y.x)};
+ const row=x=>`<div class="food"><div style="flex:1">${esc(x[0])}<br><span class="mute">circa ${x[1]} kcal, P ${x[2]} g, C ${x[3]} g, G ${x[4]} g</span></div></div>`;
+ const blk=(t,L)=>`<div class="mute" style="margin-top:12px;font-weight:600">${t}</div>${L.map(row).join("")}`;
+ return `<p class="mute" style="margin:0">Ti restano ${r.k} kcal: proteine ${Math.round(r.p)} g, carboidrati ${Math.round(r.c)} g, grassi ${Math.round(r.f)} g. ${c.t?"Giorno di allenamento: idee più ricche di carboidrati complessi per il recupero.":"Giorno di riposo: idee leggere, ricche di proteine, fibre e grassi buoni, con carboidrati moderati."}</p>`+(c.t?blk("Cena",pick("c",3,r.k+100)):blk("Pranzo",pick("p",2,r.k*.6+100))+blk("Cena",pick("c",2,r.k+100)))+`<p class="mute" style="margin:12px 0 0">Porzioni indicative: adattale alle calorie che ti restano.</p>`;
+}
 function food(){
- const f=S.food[td()]||[],e=tot();
- return `<h1>Nutrizione</h1><p class="mute" style="margin:0">Oggi ${e.k} kcal: proteine ${r1(e.p)} g, carboidrati ${r1(e.c)} g, grassi ${r1(e.f)} g</p>
+ const f=S.food[td()]||[],e=tot(),c=calc(),left=c.target-e.k,pct=Math.min(100,Math.round(e.k/c.target*100));
+ return `<h1>Nutrizione</h1>
+ <div class="card"><div class="row sp"><div><div class="mute">Calorie rimanenti</div><div class="big" style="color:${left<0?"var(--org)":"var(--ink)"}">${Math.abs(left)}</div><div class="mute">${left<0?"oltre il target":"ancora disponibili"}</div></div><div class="mute" style="text-align:right">Target ${c.target} kcal<br>Mangiate ${e.k} kcal</div></div>
+ <div style="height:12px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin-top:14px"><i style="display:block;height:100%;width:${pct}%;background:${left<0?"var(--org)":"var(--lime)"}"></i></div>
+ <p class="mute" style="margin:12px 0 0">Proteine ${r1(e.p)} / ${c.pr} g, carboidrati ${r1(e.c)} / ${c.ca} g, grassi ${r1(e.f)} / ${c.fa} g</p></div>
  <div class="card"><h3>Cerca un alimento</h3>
- <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input id="fs" value="${esc(fq)}" placeholder="Es. Pasta Barilla, bresaola, yogurt greco" oninput="fq=this.value" onkeydown="if(event.key=='Enter')fsearch()"><button class="pri" onclick="fsearch()">${I("search",16)}Cerca</button></div>
- ${fmsg?`<p class="mute" role="status" style="margin:12px 0 0">${esc(fmsg)}</p>`:""}
- ${fres.map((x,i)=>`<button class="${fsel==i?"on":""}" style="width:100%;justify-content:space-between;margin-top:8px;border-radius:20px;text-align:left" onclick="fsel=${i};fg=100;render()"><span><b>${esc(x.n)}</b>${x.b?`<br><span style="font-weight:400;font-size:13px">${esc(x.b)}</span>`:""}</span><span>${x.k} kcal/100 g</span></button>`).join("")}
- ${fsel>=0?`<div style="margin-top:14px"><label>Quanti grammi hai mangiato?<input type="number" inputmode="decimal" min="1" value="${fg}" oninput="fg=+this.value||0;$('fcl').textContent=fcalc()"></label><p id="fcl" style="margin:10px 0 0;font-weight:600">${fcalc()}</p><button class="pri" style="margin-top:12px" onclick="fadd()">${I("plus",16)}Aggiungi al diario</button></div>`:""}
- ${fres.length?`<p class="mute" style="margin:12px 0 0">Valori medi stimati, non letti dall’etichetta: per i prodotti confezionati controlla la confezione.</p>`:""}</div>
- <div class="card"><label>Oppure descrivi un pasto intero<input id="fn" value="${esc(ftxt)}" oninput="ftxt=this.value" placeholder="Es. 100 g di pasta al pomodoro e una mela" onkeydown="if(event.key=='Enter')estimate()"></label>
- <div class="row" style="margin-top:14px"><button class="pri" onclick="estimate()">${I("sparkles",16)}Calcola calorie</button><button onclick="$('pf').click()">${I("camera",16)}Foto del pasto</button></div>
- <input id="pf" type="file" accept="image/*" capture="environment" hidden onchange="analyze(this)">${pendUI()}</div>
- <div class="card"><h3>Aggiunta rapida manuale</h3><p class="mute" style="margin:4px 0 0">Se un cibo non si trova o la connessione manca: inserisci tu le calorie totali.</p>
- <div class="row" style="margin-top:12px"><label style="flex:2">Nome (facoltativo)<input id="qn" placeholder="Es. Cena al ristorante"></label><label>Kcal totali<input id="qk" type="number" inputmode="numeric"></label></div>
- <button class="pri" style="margin-top:12px" onclick="addQ()">${I("plus",16)}Aggiungi</button></div>
- <h2>Diario di oggi</h2><div class="card" style="padding-top:8px;padding-bottom:8px">${f.map((x,i)=>`<div class="food"><div style="flex:1">${esc(x.n)}${x.p||x.c||x.f?`<br><span class="mute">P ${r1(x.p||0)} g, C ${r1(x.c||0)} g, G ${r1(x.f||0)} g</span>`:""}</div><b>${x.k} kcal</b><button style="padding:8px 14px" onclick="S.food[td()].splice(${i},1);save();render()">Elimina</button></div>`).join("")||`<p class="mute">Ancora niente per oggi. Aggiungi il primo pasto.</p>`}</div>`;
+ <input id="fs" style="margin-top:12px" value="${esc(fq)}" placeholder="Es. pasta, bresaola, yogurt greco" oninput="fq=this.value;$('fl').innerHTML=flist()">
+ <label style="margin-top:10px">Categoria<select onchange="fcat=this.value;$('fl').innerHTML=flist()">${["Tutte",...DB.map(d=>d[0])].map(x=>`<option ${fcat==x?"selected":""}>${x}</option>`).join("")}</select></label>
+ ${fmsg?`<p class="mute" role="status" style="margin:12px 0 0;color:var(--lime)">${esc(fmsg)}</p>`:""}
+ ${fsel>=0?`<div style="margin-top:14px;padding:14px;border-radius:20px;background:rgba(198,255,61,.08)"><b>${esc(FOODS[fsel].n)}</b><span class="mute"> (valori per 100 g: ${FOODS[fsel].k} kcal)</span><label style="margin-top:10px">Quanti grammi hai mangiato?<input type="number" inputmode="decimal" min="1" value="${fg}" oninput="fg=+this.value||0;$('fcl').textContent=fcalc()"></label><p id="fcl" style="margin:10px 0 0;font-weight:600">${fcalc()}</p><button class="pri" style="margin-top:12px" onclick="fadd()">${I("plus",16)}Aggiungi al diario</button></div>`:""}
+ <div id="fl">${flist()}</div></div>
+ <div class="card"><h3>Aggiungi calorie manualmente</h3><div class="row" style="margin-top:12px"><label style="flex:2">Nome (facoltativo)<input id="qn" placeholder="Es. Cena al ristorante"></label><label>Kcal totali<input id="qk" type="number" inputmode="numeric"></label></div><button class="pri" style="margin-top:12px" onclick="addQ()">${I("plus",16)}Aggiungi</button></div>
+ <div class="card"><h3>Cosa mangiare a cena?</h3><div style="margin-top:10px">${dinner()}</div></div>
+ <div class="card"><div class="row sp"><h3>Foto del pasto</h3><button onclick="$('pf').click()">${I("camera",16)}Scatta</button></div><input id="pf" type="file" accept="image/*" capture="environment" hidden onchange="analyze(this)">${pendUI()}</div>
+ <h2>Diario di oggi</h2><div class="card" style="padding-top:8px;padding-bottom:8px">${f.map((x,i)=>`<div class="food"><div style="flex:1">${esc(x.n)}${x.p||x.c||x.f?`<br><span class="mute">C ${r1(x.c||0)} g, P ${r1(x.p||0)} g, G ${r1(x.f||0)} g</span>`:""}</div><b>${x.k} kcal</b><button style="padding:8px 14px" onclick="S.food[td()].splice(${i},1);save();render()">Elimina</button></div>`).join("")||`<p class="mute">Ancora niente per oggi. Aggiungi il primo pasto.</p>`}</div>`;
 }
 function pendUI(){
  if(pmsg&&!pend.length)return `<p class="mute" role="status" style="margin:14px 0 0">${esc(pmsg)}</p>`;
@@ -292,7 +325,6 @@ function pendUI(){
 }
 function addP(){const a=S.food[td()]=S.food[td()]||[];pend.forEach(x=>{if(x.k>0)a.push({n:x.n+(x.q?" ("+x.q+")":""),k:x.k})});pend=[];pmsg="";ftxt="";save();render()}
 const FMT='Rispondi solo con un array JSON di oggetti {"n": nome in italiano, "q": porzione stimata, ad esempio "circa 150 g", "k": kcal intere per quella porzione}.';
-function estimate(){const t=ftxt.trim();if(!t)return;ask('Stima le calorie di questo pasto, un oggetto per ogni alimento o bevanda, usando porzioni realistiche dove la quantità non è indicata: "'+t.replace(/"/g,"'")+'". '+FMT)}
 function analyze(inp){const f=inp.files[0];inp.value="";if(f)ask("Guarda la foto di un pasto ed elenca ogni alimento o bevanda visibile con una stima realistica di porzione e calorie. "+FMT+" Se nella foto non c’è cibo rispondi con [].",f)}
 async function ask(prompt,img){
  pend=[];pmsg=img?"Sto analizzando la foto…":"Sto calcolando le calorie…";render();
