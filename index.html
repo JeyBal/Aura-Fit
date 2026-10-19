@@ -101,7 +101,7 @@ function calc(){
  const pr=Math.round(p.w*(p.goal=="keep"?1.6:2)),fa=Math.round(target*.27/9),ca=Math.max(0,Math.round((target-pr*4-fa*9)/4));
  return{bmr:Math.round(bmr),tdee:Math.round(tdee),adj,target,t,pr,fa,ca};
 }
-function tot(){const f=S.food[td()]||[];return{k:f.reduce((a,x)=>a+x.k,0)}}
+function tot(){const f=S.food[td()]||[];return f.reduce((a,x)=>({k:a.k+x.k,p:a.p+(x.p||0),c:a.c+(x.c||0),f:a.f+(x.f||0)}),{k:0,p:0,c:0,f:0})}
 
 function home(){
  const c=calc(),e=tot(),left=c.target-e.k,over=left<0;
@@ -246,14 +246,44 @@ function tStop(){clearInterval(T.iv);$("timer").style.display="none"}
 function beep(){try{navigator.vibrate&&navigator.vibrate([300,100,300]);if(!AC)return;[0,.25,.5].forEach(d=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+d);o.stop(AC.currentTime+d+.15)})}catch(e){}}
 
 let ftxt="";
+const r1=v=>Math.round(v*10)/10;
+let fq="",fres=[],fsel=-1,fmsg="",fg=100;
+function fcalc(){const x=fres[fsel];if(!x)return "";const g=fg;return Math.round(x.k*g/100)+" kcal, proteine "+r1(x.p*g/100)+" g, carboidrati "+r1(x.c*g/100)+" g, grassi "+r1(x.f*g/100)+" g"}
+function errMsg(e){const c=e&&e.code;return c=="not_granted"?"Per cercare gli alimenti devi consentire l’uso di Claude quando te lo chiede.":c=="rate_limited"?"Troppe richieste in poco tempo. Riprova tra poco.":c=="cancelled"?"":"Ricerca non riuscita. Riprova oppure usa l’aggiunta rapida manuale."}
+async function fsearch(){
+ const q=fq.trim();if(!q)return;
+ fres=[];fsel=-1;fmsg="Sto cercando…";render();
+ try{
+  const sample=await claude.use("sample");
+  if(!sample){fmsg="La ricerca non è disponibile qui. Usa l’aggiunta rapida manuale.";render();return}
+  const r=await sample.json('Sei un database nutrizionale italiano. Per la ricerca "'+q.replace(/"/g,"'")+'" elenca da 3 a 6 alimenti o prodotti commerciali realistici che corrispondono, con valori medi per 100 g. Rispondi solo con un array JSON di oggetti {"n": nome, "b": marca oppure "", "k": kcal per 100 g, "p": proteine in g per 100 g, "c": carboidrati in g per 100 g, "f": grassi in g per 100 g}. Se la ricerca non è un alimento rispondi con [].');
+  fres=(Array.isArray(r)?r:[]).filter(x=>x&&x.n&&+x.k>=0&&x.k!==""&&x.k!=null).slice(0,6).map(x=>({n:String(x.n),b:String(x.b||""),k:Math.round(+x.k),p:r1(+x.p||0),c:r1(+x.c||0),f:r1(+x.f||0)}));
+  fmsg=fres.length?"":"Nessun risultato. Prova con un altro nome oppure usa l’aggiunta rapida manuale.";
+ }catch(e){fmsg=errMsg(e)}
+ render();
+}
+function fadd(){
+ const x=fres[fsel];if(!x||!(fg>0))return;
+ (S.food[td()]=S.food[td()]||[]).push({n:x.n+(x.b?" ("+x.b+")":"")+", "+fg+" g",k:Math.round(x.k*fg/100),p:r1(x.p*fg/100),c:r1(x.c*fg/100),f:r1(x.f*fg/100)});
+ fres=[];fsel=-1;fq="";fmsg="Aggiunto al diario.";save();render();
+}
+function addQ(){const k=Math.round(+$("qk").value);if(!(k>0))return;(S.food[td()]=S.food[td()]||[]).push({n:$("qn").value.trim()||"Aggiunta rapida",k});save();render()}
 function food(){
  const f=S.food[td()]||[],e=tot();
- return `<h1>Nutrizione</h1><p class="mute" style="margin:0">Oggi hai mangiato ${e.k} kcal</p>
- <div class="card"><label>Cosa hai mangiato?<input id="fn" value="${esc(ftxt)}" oninput="ftxt=this.value" placeholder="Es. 100 g di pasta al pomodoro e una mela" onkeydown="if(event.key=='Enter')estimate()"></label>
- <p class="mute" style="margin:8px 0 0">Scrivi gli alimenti con le quantità che sai: le calorie le calcolo io.</p>
+ return `<h1>Nutrizione</h1><p class="mute" style="margin:0">Oggi ${e.k} kcal: proteine ${r1(e.p)} g, carboidrati ${r1(e.c)} g, grassi ${r1(e.f)} g</p>
+ <div class="card"><h3>Cerca un alimento</h3>
+ <div class="row" style="margin-top:12px;flex-wrap:nowrap"><input id="fs" value="${esc(fq)}" placeholder="Es. Pasta Barilla, bresaola, yogurt greco" oninput="fq=this.value" onkeydown="if(event.key=='Enter')fsearch()"><button class="pri" onclick="fsearch()">${I("search",16)}Cerca</button></div>
+ ${fmsg?`<p class="mute" role="status" style="margin:12px 0 0">${esc(fmsg)}</p>`:""}
+ ${fres.map((x,i)=>`<button class="${fsel==i?"on":""}" style="width:100%;justify-content:space-between;margin-top:8px;border-radius:20px;text-align:left" onclick="fsel=${i};fg=100;render()"><span><b>${esc(x.n)}</b>${x.b?`<br><span style="font-weight:400;font-size:13px">${esc(x.b)}</span>`:""}</span><span>${x.k} kcal/100 g</span></button>`).join("")}
+ ${fsel>=0?`<div style="margin-top:14px"><label>Quanti grammi hai mangiato?<input type="number" inputmode="decimal" min="1" value="${fg}" oninput="fg=+this.value||0;$('fcl').textContent=fcalc()"></label><p id="fcl" style="margin:10px 0 0;font-weight:600">${fcalc()}</p><button class="pri" style="margin-top:12px" onclick="fadd()">${I("plus",16)}Aggiungi al diario</button></div>`:""}
+ ${fres.length?`<p class="mute" style="margin:12px 0 0">Valori medi stimati, non letti dall’etichetta: per i prodotti confezionati controlla la confezione.</p>`:""}</div>
+ <div class="card"><label>Oppure descrivi un pasto intero<input id="fn" value="${esc(ftxt)}" oninput="ftxt=this.value" placeholder="Es. 100 g di pasta al pomodoro e una mela" onkeydown="if(event.key=='Enter')estimate()"></label>
  <div class="row" style="margin-top:14px"><button class="pri" onclick="estimate()">${I("sparkles",16)}Calcola calorie</button><button onclick="$('pf').click()">${I("camera",16)}Foto del pasto</button></div>
  <input id="pf" type="file" accept="image/*" capture="environment" hidden onchange="analyze(this)">${pendUI()}</div>
- <h2>Diario di oggi</h2><div class="card" style="padding-top:8px;padding-bottom:8px">${f.map((x,i)=>`<div class="food"><div style="flex:1">${esc(x.n)}</div><b>${x.k} kcal</b><button class="ic" aria-label="Rimuovi" onclick="S.food[td()].splice(${i},1);save();render()">${I("x",16)}</button></div>`).join("")||`<p class="mute">Ancora niente per oggi. Aggiungi il primo pasto.</p>`}</div>`;
+ <div class="card"><h3>Aggiunta rapida manuale</h3><p class="mute" style="margin:4px 0 0">Se un cibo non si trova o la connessione manca: inserisci tu le calorie totali.</p>
+ <div class="row" style="margin-top:12px"><label style="flex:2">Nome (facoltativo)<input id="qn" placeholder="Es. Cena al ristorante"></label><label>Kcal totali<input id="qk" type="number" inputmode="numeric"></label></div>
+ <button class="pri" style="margin-top:12px" onclick="addQ()">${I("plus",16)}Aggiungi</button></div>
+ <h2>Diario di oggi</h2><div class="card" style="padding-top:8px;padding-bottom:8px">${f.map((x,i)=>`<div class="food"><div style="flex:1">${esc(x.n)}${x.p||x.c||x.f?`<br><span class="mute">P ${r1(x.p||0)} g, C ${r1(x.c||0)} g, G ${r1(x.f||0)} g</span>`:""}</div><b>${x.k} kcal</b><button style="padding:8px 14px" onclick="S.food[td()].splice(${i},1);save();render()">Elimina</button></div>`).join("")||`<p class="mute">Ancora niente per oggi. Aggiungi il primo pasto.</p>`}</div>`;
 }
 function pendUI(){
  if(pmsg&&!pend.length)return `<p class="mute" role="status" style="margin:14px 0 0">${esc(pmsg)}</p>`;
