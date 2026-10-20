@@ -58,6 +58,7 @@ label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--mute
 </style></head>
 <body>
 <main id="app"></main>
+<div id="flash" aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;z-index:20;transition:background .15s"></div>
 <div id="timer"><div><div id="tl" style="font-size:13px;font-weight:600">Recupero</div><b id="tv">0:00</b></div><div class="row"><button onclick="tAdd(15)">+15 s</button><button onclick="tStop()">Salta</button></div></div>
 <nav class="tabs" aria-label="Sezioni">
 <button id="t-home" onclick="setTab('home')"><i data-lucide="layout-dashboard"></i>Oggi</button>
@@ -239,11 +240,17 @@ function kgAdj(i,d){const e=S.plans[cur].ex[i];e.kg=Math.max(0,(+e.kg||0)+d);sav
 function setDone(i,j){const k=i+"-"+j;sd[k]=!sd[k];lk=sd[k]?k:"";save();if(sd[k]){const e=S.plans[cur].ex[i];if(e.t>0)tStart(e.t)}render()}
 
 let T={end:0,iv:null},AC=null;
-function tStart(s,l){tStop();$("tl").textContent=l||"Recupero";try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}T.end=Date.now()+s*1000;$("timer").style.display="flex";tick();T.iv=setInterval(tick,250)}
-function tick(){const l=Math.ceil((T.end-Date.now())/1000);if(l<=0){beep();tStop();return}$("tv").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0")}
-function tAdd(s){T.end+=s*1000;tick()}
-function tStop(){clearInterval(T.iv);$("timer").style.display="none"}
-function beep(){try{navigator.vibrate&&navigator.vibrate([300,100,300]);if(!AC)return;[0,.25,.5].forEach(d=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=880;g.gain.value=.2;o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+d);o.stop(AC.currentTime+d+.15)})}catch(e){}}
+function tStart(s,l){tStop();T.done=false;$("timer").style.background="";$("tl").textContent=l||"Recupero";try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();const b=AC.createBuffer(1,1,22050),n=AC.createBufferSource();n.buffer=b;n.connect(AC.destination);n.start(0)}catch(e){}try{if("Notification" in window&&Notification.permission=="default")Notification.requestPermission()}catch(e){}T.end=Date.now()+s*1000;$("timer").style.display="flex";tick();T.iv=setInterval(tick,250)}
+function tick(){if(T.done)return;const l=Math.ceil((T.end-Date.now())/1000);if(l<=0){T.done=true;clearInterval(T.iv);$("tv").textContent="0:00";$("tl").textContent="Tempo scaduto!";$("timer").style.background="var(--lime)";alarm();clearTimeout(T.h);T.h=setTimeout(tStop,4000);return}$("tv").textContent=Math.floor(l/60)+":"+String(l%60).padStart(2,"0")}
+function tAdd(s){if(T.done){tStart(s,"Recupero");return}T.end+=s*1000;tick()}
+function tStop(){clearInterval(T.iv);clearTimeout(T.h);$("timer").style.display="none"}
+function alarm(){try{navigator.vibrate&&navigator.vibrate([300,150,300,150,500])}catch(e){}beep();flash();notify()}
+function beep(){try{if(!AC)return;if(AC.state=="suspended")AC.resume();[0,.3,.6].forEach(d=>{const t=AC.currentTime+d,o=AC.createOscillator(),g=AC.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.3,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.22);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.25)})}catch(e){}}
+function flash(){const el=$("flash"),rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches,O="rgba(255,106,31,.55)",G="rgba(198,255,61,.5)",c=rm?[G,""]:[O,G,O,G,O,G,""];c.forEach((x,i)=>setTimeout(()=>{el.style.background=x},i*(rm?1500:300)))}
+function notify(){try{if("Notification" in window&&Notification.permission=="granted")new Notification("Tempo di recupero terminato!",{body:"È ora della prossima serie!",tag:"recupero",renotify:true,vibrate:[300,150,300,150,500]})}catch(e){}}
+function ntfTxt(){const p="Notification" in window?Notification.permission:"x";return p=="granted"?"Notifiche attive.":p=="denied"?"Notifiche bloccate dal browser: puoi riattivarle dalle impostazioni del sito.":p=="x"?"Notifiche non disponibili su questo browser.":"Notifiche non ancora attivate."}
+function askNtf(){try{const r=Notification.requestPermission();r&&r.then&&r.then(()=>render())}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&T.iv)tick()});
 
 let ftxt="";
 const r1=v=>Math.round(v*10)/10;
@@ -349,6 +356,7 @@ function settings(){
  <h2>Profilo</h2><div class="card"><div class="row"><label>Sesso<select onchange="S.prof.sex=this.value;save()"><option value="m" ${p.sex=="m"?"selected":""}>Uomo</option><option value="f" ${p.sex=="f"?"selected":""}>Donna</option></select></label>${inp("Età","age")}</div>
  <div class="row" style="margin-top:10px">${inp("Peso (kg)","w")}${inp("Altezza (cm)","h")}</div>
  <label style="margin-top:10px">Attività fuori dalla palestra<select onchange="S.prof.act=+this.value;save()"><option value="1.2" ${p.act==1.2?"selected":""}>Poca (lavoro seduto)</option><option value="1.375" ${p.act==1.375?"selected":""}>Moderata (in piedi o camminate)</option><option value="1.55" ${p.act==1.55?"selected":""}>Alta (lavoro fisico)</option></select></label></div>
+ <h2>Avvisi del timer</h2><div class="card"><p class="mute" style="margin:0 0 12px">Allo scadere del recupero: vibrazione, suono, lampeggio e notifica. ${ntfTxt()}</p><div class="row"><button onclick="askNtf()">${I("bell",16)}Attiva notifiche</button><button onclick="tStart(3,'Prova avvisi')">${I("timer",16)}Prova gli avvisi</button></div></div>
  <h2>Obiettivo passi</h2><div class="card"><label>Passi al giorno<input type="number" inputmode="numeric" value="${S.sgoal||10000}" onchange="S.sgoal=+this.value||10000;save();render()"></label></div>
  <h2>Giorni di allenamento</h2><div class="card"><div class="chips">${[1,2,3,4,5,6,0].map(d=>`<button class="${S.days.includes(d)?"on":""}" onclick="togDay(${d})">${D[d]}</button>`).join("")}</div>
  <div class="row sp" style="margin-top:16px"><span class="mute">Oggi: ${isTrain()?"allenamento":"riposo"}</span><button onclick="S.ov[td()]=!isTrain();save();render()">${I("repeat",16)}Cambia solo oggi</button></div></div>
